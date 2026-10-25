@@ -1,0 +1,3059 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Branches Mind Mapper</title>
+<style>
+:root{
+  --bg:#f6f7f9; --dot:#d5dae1; --panel:#ffffff; --panel2:#f0f2f5; --border:#e0e4ea; --text:#1c2330; --muted:#7a8494;
+  --root-bg:#ffffff; --root-border:#d9dee5; --sel:#3b82f6; --sel-soft:rgba(59,130,246,.14); --shadow:0 10px 30px rgba(20,30,50,.12);
+  --tool:#7c5cff; --tool-soft:rgba(124,92,255,.14); --danger:#d64545;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161f; --dot:#273040; --panel:#1a202a; --panel2:#232a35; --border:#2e3644; --text:#e8ecf2; --muted:#8792a3;
+    --root-bg:#2b3340; --root-border:#2b3340; --sel:#4c8dff; --sel-soft:rgba(76,141,255,.18); --shadow:0 10px 30px rgba(0,0,0,.4);
+    --tool:#8b6dff; --tool-soft:rgba(139,109,255,.2);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11161f; --dot:#273040; --panel:#1a202a; --panel2:#232a35; --border:#2e3644; --text:#e8ecf2; --muted:#8792a3;
+  --root-bg:#2b3340; --root-border:#2b3340; --sel:#4c8dff; --sel-soft:rgba(76,141,255,.18); --shadow:0 10px 30px rgba(0,0,0,.4);
+  --tool:#8b6dff; --tool-soft:rgba(139,109,255,.2);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
+#app{display:flex;height:100%;width:100%}
+
+/* ---------- sidebar (Whimsical-style) ---------- */
+#sidebar{width:264px;flex:none;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:30;transition:margin-left .2s ease}
+#app.nosidebar #sidebar{margin-left:-264px}
+.sb-head{display:flex;align-items:center;gap:6px;padding:12px 10px 8px 12px}
+.profile{display:flex;align-items:center;gap:8px;min-width:0;flex:1;padding:6px 8px;border-radius:8px;text-align:left}
+.profile:hover{background:var(--panel2)}
+.profile img{width:24px;height:24px;border-radius:50%;flex:none;background:var(--panel2)}
+.profile span{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile svg{width:14px;height:14px;flex:none;stroke:var(--muted);fill:none;stroke-width:2}
+.newbtn{width:30px;height:30px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.newbtn:hover{border-color:var(--muted)}
+#sbBanner{margin:4px 12px 8px;padding:10px 12px;border-radius:10px;background:var(--sel-soft);font-size:12.5px;line-height:1.45}
+#sbBanner button{margin-top:8px}
+#doclist{flex:1;overflow:auto;padding:4px 8px 12px}
+.sec{display:flex;align-items:center;gap:6px;width:100%;padding:12px 8px 6px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sec svg{width:10px;height:10px;fill:var(--muted);transition:transform .15s}
+.sec.closed svg{transform:rotate(-90deg)}
+.sec-empty{font-size:12.5px;color:var(--muted);padding:2px 10px 8px 24px;line-height:1.45}
+.doc{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;margin-bottom:1px;align-items:center}
+.doc:hover{background:var(--panel2)}
+.doc.on{background:var(--sel-soft)}
+.doc .di{grid-row:1/3;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--tool-soft);color:var(--tool)}
+.doc .di svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.doc .di img{width:22px;height:22px;border-radius:50%}
+.doc .dt{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .dm{font-size:11.5px;color:var(--muted);grid-row:2;grid-column:2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .del{grid-row:1/3;grid-column:3;opacity:0;font-size:12px;color:var(--muted);padding:4px 6px;border-radius:6px}
+.doc:hover .del,.doc .del.armed{opacity:1}
+.doc .del:hover{background:var(--panel)}
+.doc .del.armed{color:#fff;background:var(--danger)}
+.sb-foot{border-top:1px solid var(--border);padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--sel);border-color:var(--sel);color:#fff}
+.btn.danger{color:var(--danger)}
+.sb-foot .btn{font-size:12px;padding:0 8px}
+.sb-foot .wide{grid-column:1/3}
+
+/* ---------- stage ---------- */
+#stage{position:relative;flex:1;overflow:hidden;touch-action:none;outline:none;
+  background-color:var(--bg);background-image:radial-gradient(circle,var(--dot) 1.1px,transparent 1.4px);background-size:24px 24px}
+#stage.panning,#stage.space,#stage[data-tool="hand"]{cursor:grab}
+#stage.panning.moving{cursor:grabbing}
+#stage[data-tool="mindmap"],#stage[data-tool="note"],#stage[data-tool="text"],#stage[data-tool="table"]{cursor:crosshair}
+#world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#items{position:absolute;left:0;top:0}
+#edges{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
+#edges path{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#edges path.dim{opacity:.25}
+#nodes{position:absolute;left:0;top:0}
+#selbox{position:absolute;border:1.5px dashed var(--sel);border-radius:6px;pointer-events:none}
+#marquee{position:absolute;border:1px solid var(--sel);background:var(--sel-soft);pointer-events:none;z-index:15}
+
+.node{position:absolute;left:0;top:0;width:max-content;padding:6px 10px;border-radius:7px;font-size:16px;line-height:1.4;font-weight:450;color:var(--text);
+  user-select:none;-webkit-user-select:none;cursor:default;white-space:nowrap}
+.node .label{display:block;white-space:pre-wrap;overflow-wrap:anywhere;max-width:380px;min-width:2px;min-height:1.4em;outline:none}
+.node .label:empty::before{content:attr(data-ph);color:var(--muted)}
+.node.l1{font-size:17px;font-weight:500}
+.node.root{background:var(--root-bg);border:1px solid var(--root-border);padding:13px 24px;border-radius:10px;font-size:23px;font-weight:500;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.node.root .label{max-width:420px}
+.node:hover:not(.sel){background:var(--sel-soft)}
+.node.root:hover:not(.sel){background:var(--root-bg);border-color:var(--sel)}
+.node.sel{box-shadow:0 0 0 2px var(--sel)}
+.node.root.sel{box-shadow:0 0 0 2px var(--sel),0 2px 10px rgba(0,0,0,.12)}
+.node.editing{box-shadow:0 0 0 2px var(--sel);cursor:text}
+.node.editing .label{user-select:text;-webkit-user-select:text;cursor:text;caret-color:var(--sel)}
+.node.dragging{opacity:.3}
+.node.drop{box-shadow:0 0 0 2px var(--sel);background:var(--sel-soft)!important}
+.node .tog,.node .badge{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bg)}
+.node .tog{left:calc(100% - 8px);width:16px;height:16px;border:2px solid var(--c);opacity:0;pointer-events:none;transition:opacity .12s}
+.node .tog::before{content:"";width:6px;height:2px;border-radius:1px;background:var(--c)}
+.node.has-kids:not(.collapsed):hover .tog,.node.sel.has-kids:not(.collapsed):not(.editing) .tog{opacity:1;pointer-events:auto}
+.node .badge{display:none;left:calc(100% + 2px);min-width:24px;height:24px;padding:0 6px;border-radius:12px;border:2px solid var(--c);font-size:11.5px;font-weight:700;color:var(--text);line-height:1}
+.node.collapsed .badge{display:flex}
+/* add buttons: small solid circles in the branch colour, like Whimsical */
+.node .plus,.node .sib{position:absolute;display:none;align-items:center;justify-content:center;width:20px;height:20px;padding:0;border-radius:50%;
+  background:var(--add);color:#fff;box-shadow:0 0 0 3px var(--bg),0 2px 6px rgba(0,0,0,.25);z-index:2;opacity:.92;
+  transition:transform .12s ease,opacity .12s ease}
+.node .plus svg,.node .sib svg{width:10px;height:10px;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;fill:none}
+.node .plus{left:calc(100% + 10px);top:50%;transform:translateY(-50%)}
+.node .sib{left:50%;top:calc(100% + 8px);transform:translateX(-50%)}
+.node .plus:hover{opacity:1;transform:translateY(-50%) scale(1.12)}
+.node .sib:hover{opacity:1;transform:translateX(-50%) scale(1.12)}
+.node.sel:not(.has-kids):not(.editing) .plus{display:flex}
+.node.sel:not(.root):not(.editing) .sib{display:flex}
+.node.left .tog{left:auto;right:calc(100% - 8px)}
+.node.left .badge{left:auto;right:calc(100% + 2px)}
+.node.left .plus{left:auto;right:calc(100% + 10px)}
+
+/* ---------- free objects: images, tables, notes, text ---------- */
+.item{position:absolute;left:0;top:0;user-select:none;-webkit-user-select:none}
+.item.sel{outline:2px solid var(--sel);outline-offset:3px;border-radius:4px}
+.item .ibody{outline:none;white-space:pre-wrap;overflow-wrap:anywhere;min-height:1.4em}
+.item.editing .ibody,.item.editing td[contenteditable]{user-select:text;-webkit-user-select:text;cursor:text}
+.item-image img{display:block;width:100%;height:100%;object-fit:contain;border-radius:6px;pointer-events:none}
+.item-image.broken{background:var(--panel2);border:1px dashed var(--border);border-radius:6px}
+.item-image.broken img{visibility:hidden}
+.item-image.broken::after{content:"Image unavailable";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.item-note{padding:14px 16px;border-radius:4px;color:#1d2430;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:15px;line-height:1.45;min-height:110px}
+.item-note .ibody:empty::before{content:"Type something";color:rgba(29,36,48,.45)}
+.item-text{font-size:20px;line-height:1.35;color:var(--text);padding:2px 4px;max-width:640px;width:max-content}
+.item-text .ibody:empty::before{content:"Text";color:var(--muted)}
+.item-table{width:max-content}
+.item-table table{border-collapse:collapse;background:var(--panel);font-size:14px;line-height:1.4;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.item-table td{border:1px solid var(--border);padding:7px 11px;min-width:56px;max-width:280px;white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:top;outline:none}
+.item-table tr.head td{background:var(--panel2);font-weight:600}
+.item-table td.cur{box-shadow:inset 0 0 0 2px var(--sel)}
+.rh{position:absolute;right:-7px;bottom:-7px;width:12px;height:12px;border-radius:3px;background:var(--bg);border:2px solid var(--sel);cursor:nwse-resize;display:none}
+.item.sel .rh{display:block}
+
+#dropbar{position:absolute;height:4px;width:90px;border-radius:2px;background:var(--sel);pointer-events:none;box-shadow:0 0 0 3px var(--sel-soft)}
+.ghost{position:fixed;z-index:50;pointer-events:none;padding:6px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--sel);box-shadow:var(--shadow);font-size:15px;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.95}
+#stage.filedrop::after{content:"Drop images to add them";position:absolute;inset:12px;border:2px dashed var(--sel);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--sel);background:var(--sel-soft);z-index:45;pointer-events:none}
+
+/* ---------- floating ui ---------- */
+.float{position:absolute;background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);z-index:20}
+#topbar{left:12px;top:12px;display:flex;align-items:center;gap:4px;padding:5px;max-width:calc(100% - 24px)}
+#topright{right:12px;top:12px;display:flex;align-items:center;gap:2px;padding:5px}
+.ib{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:var(--text);flex:none}
+.ib:hover{background:var(--panel2)}
+.ib.on{background:var(--sel-soft);color:var(--sel)}
+.ib:disabled{opacity:.35;cursor:default}
+.ib svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#space{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;border-radius:7px;font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
+#space:hover{background:var(--panel2);color:var(--text)}
+#space svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9}
+.crumb{color:var(--muted);padding:0 2px}
+#title{font:inherit;font-size:15px;font-weight:600;color:var(--text);background:transparent;border:1px solid transparent;border-radius:7px;padding:6px 8px;width:230px;max-width:100%;min-width:0}
+#title:hover{border-color:var(--border)}
+#title:focus{outline:none;border-color:var(--sel);background:var(--bg)}
+#shareBtn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:600}
+#shareBtn:hover{background:var(--panel2)}
+#shareBtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9}
+.sep{width:1px;height:22px;background:var(--border);margin:0 4px;flex:none}
+
+/* tool rail */
+#rail{left:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:14px}
+#rail .ib{width:40px;height:40px;border-radius:10px}
+#rail .ib svg{width:20px;height:20px}
+#rail .ib.on{background:var(--tool);color:#fff}
+#rail .rsep{height:1px;background:var(--border);margin:3px 4px}
+
+#zoombar{right:12px;bottom:12px;display:flex;align-items:center;padding:4px;gap:2px}
+#zoomPct{min-width:56px;height:34px;font-size:13px;font-weight:600;border-radius:8px;font-variant-numeric:tabular-nums}
+#zoomPct:hover{background:var(--panel2)}
+#hint{left:50%;top:50%;transform:translate(-50%,-50%);padding:22px 26px;font-size:14px;color:var(--muted);text-align:center;max-width:min(420px,calc(100% - 32px));line-height:1.5}
+#hint h2{margin:0 0 6px;font-size:17px;color:var(--text)}
+#hint .row{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+#loading{left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 20px;font-size:14px;color:var(--muted)}
+#banner{left:50%;bottom:64px;transform:translateX(-50%);padding:10px 14px;font-size:13px;max-width:min(560px,calc(100% - 32px));line-height:1.45}
+
+.tbar{display:flex;align-items:center;gap:2px;padding:5px;border-radius:12px;z-index:25;white-space:nowrap}
+.tbar .swatches{display:flex;gap:3px;padding:0 4px}
+.sw{width:20px;height:20px;border-radius:50%;background:var(--sw);box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}
+.sw.auto{background:conic-gradient(#a541cc,#3d72de,#23a094,#e07b39,#d8a31f,#a541cc)}
+.sw.on{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--sel)}
+.tbar .ib{width:32px;height:32px}
+.tbar .tl{height:32px;padding:0 9px;border-radius:8px;font-size:12.5px;font-weight:600}
+.tbar .tl:hover{background:var(--panel2)}
+.tbar .tl.on{background:var(--sel-soft);color:var(--sel)}
+
+#help,#dialog{left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 32px));max-height:calc(100% - 48px);overflow:auto;padding:20px 22px;z-index:40}
+#help h2,#dialog h2{margin:0 0 4px;font-size:17px;text-wrap:balance}
+#help p,#dialog p{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.5}
+#help table{width:100%;border-collapse:collapse;font-size:13.5px}
+#help td{padding:6px 0;border-top:1px solid var(--border);vertical-align:top}
+#help td:first-child{width:46%;padding-right:12px}
+kbd{display:inline-block;font:600 12px/1 var(--font);padding:4px 6px;border-radius:5px;background:var(--panel2);border:1px solid var(--border);margin:0 2px 2px 0;white-space:nowrap}
+#dialog input[type="search"],#dialog input[type="email"]{width:100%;height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+.plist{margin:10px 0 4px;display:flex;flex-direction:column;gap:2px}
+.prow{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:8px}
+.prow:hover{background:var(--panel2)}
+.prow img{width:28px;height:28px;border-radius:50%;flex:none}
+.prow .pn{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .pr{font-size:12.5px;color:var(--muted)}
+.dlg-foot{display:flex;justify-content:space-between;gap:8px;margin-top:16px;flex-wrap:wrap}
+.linkbox{margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:10px}
+.lrow{display:flex;align-items:center;gap:10px}
+.licon{width:32px;height:32px;border-radius:8px;background:var(--sel-soft);color:var(--sel);display:flex;align-items:center;justify-content:center;flex:none}
+.licon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.ltext{flex:1;min-width:0}
+.ltext b{display:block;font-size:14px;font-weight:600}
+.ltext span{display:block;font-size:12.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+.lcopy{display:flex;gap:8px}
+.lcopy input{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font:inherit;font-size:12.5px}
+.switch{position:relative;width:40px;height:22px;flex:none;cursor:pointer}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:11px;background:var(--border);transition:background .15s;pointer-events:none}
+.switch span::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.switch input:checked+span{background:var(--sel)}
+.switch input:checked+span::after{transform:translateX(18px)}
+.switch input:focus-visible+span{outline:2px solid var(--sel);outline-offset:2px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+#menu{left:12px;top:56px;width:280px;padding:6px;z-index:45}
+#menu .mi{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:8px;font-size:13.5px;text-align:left}
+#menu .mi:hover{background:var(--panel2)}
+#menu .who{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--border);margin-bottom:4px}
+#menu .who img{width:34px;height:34px;border-radius:50%}
+#menu .who b{display:block;font-size:14px}
+#menu .who span{font-size:12px;color:var(--muted);line-height:1.4}
+#toast{left:50%;top:16px;transform:translateX(-50%);padding:9px 14px;font-size:13px;font-weight:500;z-index:60;pointer-events:none;transition:opacity .2s;opacity:0;max-width:calc(100% - 32px)}
+#toast.show{opacity:1}
+#scrim{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:35}
+#banner{display:flex;align-items:center;gap:12px;z-index:50}
+#banner .btn{flex:none}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:42px;margin-top:6px;border-radius:10px;font-size:14px}
+.gbtn svg{width:18px;height:18px}
+.linkish{display:block;margin:12px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}
+.pr a{color:var(--sel)}
+
+@media (max-width:720px){
+  #sidebar{position:absolute;left:0;top:0;bottom:0;box-shadow:var(--shadow)}
+  #title{width:120px}
+  #space .sl{display:none}
+  #rail{top:auto;bottom:12px;transform:none;flex-direction:row;left:12px}
+  #rail .rsep{width:1px;height:auto;margin:4px 3px}
+  #rail .ib{width:36px;height:36px}
+  #zoombar{bottom:68px}
+  #shareBtn span{display:none}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar" class="ui">
+    <div class="sb-head">
+      <button class="profile" id="profileBtn" aria-label="Account menu"><img id="avatar" alt=""><span id="profileName">This browser</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="newbtn" id="newDoc" title="New board" aria-label="New board">+</button>
+    </div>
+    <div id="sbBanner" hidden></div>
+    <div id="doclist" role="list"></div>
+    <div class="sb-foot">
+      <button class="btn wide" id="copyText" title="Copy the whole map as an indented list (pastes into Notion, Slack, docs)">Copy as indented list</button>
+      <button class="btn" id="exportJson" title="Save this board as a .json file">Export</button>
+      <button class="btn" id="importBtn" title="Import a .json board, or a .md / .txt indented list">Import</button>
+      <input type="file" id="importFile" accept=".json,.md,.txt,application/json,text/plain,text/markdown" hidden>
+      <input type="file" id="imageFile" accept="image/*" multiple hidden>
+    </div>
+  </aside>
+
+  <main id="stage" tabindex="-1" data-tool="select">
+    <div id="world">
+      <div id="items"></div>
+      <svg id="edges" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="nodes"></div>
+      <div id="selbox" hidden></div>
+      <div id="dropbar" hidden></div>
+    </div>
+    <div id="marquee" hidden></div>
+
+    <div id="topbar" class="float ui">
+      <button class="ib" id="toggleSidebar" title="Show / hide boards (⌘E)" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+      <button id="space" title="Who can see this board"></button>
+      <span class="crumb">/</span>
+      <input id="title" placeholder="Untitled" spellcheck="false" aria-label="Board title">
+    </div>
+    <div id="topright" class="float ui">
+      <button id="shareBtn" title="Share this board"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Share</span></button>
+      <span class="sep"></span>
+      <button class="ib" id="undoBtn" title="Undo (⌘Z)" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button class="ib" id="redoBtn" title="Redo (⇧⌘Z)" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+      <span class="sep"></span>
+      <button class="ib" id="themeBtn" title="Light / dark" aria-label="Toggle theme"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <button class="ib" id="helpBtn" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/></svg></button>
+    </div>
+
+    <nav id="rail" class="float ui" aria-label="Tools">
+      <button class="ib on" data-tool="select" title="Select (V) · drag on the canvas to select a group" aria-label="Select"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 2-2 6z"/></svg></button>
+      <button class="ib" data-tool="hand" title="Hand (H) · drag to move around" aria-label="Hand"><svg viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 11.5V4a1.5 1.5 0 0 1 3 0v8M14 12V5.5a1.5 1.5 0 0 1 3 0V13M17 8.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 14a1.6 1.6 0 0 1 2.6-1.8L8 13.5"/></svg></button>
+      <span class="rsep"></span>
+      <button class="ib" data-tool="mindmap" title="Mind map (M) · click to place" aria-label="Mind map"><svg viewBox="0 0 24 24"><rect x="2.5" y="9.5" width="6" height="5" rx="1.5"/><path d="M8.5 12c4 0 3-6 7-6M8.5 12c4 0 3 6 7 6"/><path d="M15.5 6h6M15.5 18h6"/></svg></button>
+      <button class="ib" data-tool="note" title="Sticky note (N) · click to place" aria-label="Sticky note"><svg viewBox="0 0 24 24"><path d="M4 4h16v10l-6 6H4z"/><path d="M14 20v-6h6"/></svg></button>
+      <button class="ib" data-tool="text" title="Text (T) · click to place" aria-label="Text"><svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></button>
+      <button class="ib" data-tool="table" title="Table (E) · click to place, or paste one from a spreadsheet" aria-label="Table"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/></svg></button>
+      <button class="ib" data-tool="image" title="Image (I) · or paste / drop one" aria-label="Image"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></button>
+    </nav>
+
+    <div id="toolbar" class="float ui tbar" hidden>
+      <div class="swatches"></div>
+      <span class="sep" data-g="color"></span>
+      <button class="ib" data-act="child" title="Add child (Tab)" aria-label="Add child"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="ib" data-act="collapse" title="Collapse / expand (⌘/)" aria-label="Collapse or expand"><svg viewBox="0 0 24 24"><path d="m7 15 5-5 5 5"/></svg></button>
+      <button class="ib" data-act="fold" title="Fold / unfold all sub-branches (⇧⌘/)" aria-label="Fold all"><svg viewBox="0 0 24 24"><path d="m7 11 5-5 5 5"/><path d="m7 18 5-5 5 5"/></svg></button>
+      <span class="layout-group" style="display:flex;gap:2px">
+        <span class="sep"></span>
+        <button class="ib" data-act="layout" data-v="right" title="Branches to the right" aria-label="Layout right"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="6" height="6" rx="1.5"/><path d="M9 12c4 0 4-6 8-6M9 12h8M9 12c4 0 4 6 8 6"/></svg></button>
+        <button class="ib" data-act="layout" data-v="both" title="Branches on both sides" aria-label="Layout both"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1.5"/><path d="M15 12c3 0 3-5 6-5M15 12c3 0 3 5 6 5M9 12c-3 0-3-5-6-5M9 12c-3 0-3 5-6 5"/></svg></button>
+        <button class="ib" data-act="layout" data-v="left" title="Branches to the left" aria-label="Layout left"><svg viewBox="0 0 24 24"><rect x="15" y="9" width="6" height="6" rx="1.5"/><path d="M15 12c-4 0-4-6-8-6M15 12H7M15 12c-4 0-4 6-8 6"/></svg></button>
+      </span>
+      <span class="sep"></span>
+      <button class="ib" data-act="delete" title="Delete (Delete)" aria-label="Delete"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
+    </div>
+    <div id="itoolbar" class="float ui tbar" hidden></div>
+
+    <div id="zoombar" class="float ui">
+      <button class="ib" id="zoomOut" title="Zoom out (⌘−)" aria-label="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button id="zoomPct" title="Reset to 100% (⇧0)">100%</button>
+      <button class="ib" id="zoomIn" title="Zoom in (⌘+)" aria-label="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="ib" id="zoomFit" title="Fit to screen (⇧1)" aria-label="Fit"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+
+    <div id="hint" class="float ui" hidden></div>
+    <div id="loading" class="float" hidden>Loading your boards…</div>
+    <div id="banner" class="float ui" hidden></div>
+    <div id="toast" class="float"></div>
+    <div id="scrim" hidden></div>
+    <div id="help" class="float ui" hidden role="dialog" aria-label="Keyboard shortcuts"></div>
+    <div id="dialog" class="float ui" hidden role="dialog"></div>
+  </main>
+  <div id="menu" class="float ui" hidden role="menu"></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* =========================================================================
+   Constants & helpers
+   ========================================================================= */
+const PALETTE = ['#a541cc','#3d72de','#23a094','#e07b39','#d8a31f','#de4f8e','#55b04f','#e05555'];
+const NOTE_COLORS = ['#fde68a','#fbcfe8','#bfdbfe','#bbf7d0','#ddd6fe','#fed7aa'];
+const HGAP_ROOT = 92, HGAP = 80, VGAP_ROOT = 26, VGAP_L1 = 14, VGAP = 10;
+const LS_KEY = 'mindmaps.store.v1', LS_DOC = 'mindmaps.doc.', LS_VIEW = 'mindmaps.view.';
+const LS_TOKEN = 'mindmaps.gtoken', LS_PEND = 'mindmaps.pending.';
+const CFG = Object.assign({
+  googleClientId: '', googleApiKey: '', googleAppId: '',
+  scope: 'https://www.googleapis.com/auth/drive.file',
+  folderName: 'Branches Mind Mapper', pollSeconds: 20
+}, window.MINDMAP_CONFIG || {});
+/** Google sign-in only works from an http(s) origin that is registered on the OAuth client (not from file://). */
+const DRIVE_READY = !!CFG.googleClientId && /^https?:$/.test(location.protocol);
+const PICKER_READY = !!(CFG.googleApiKey && CFG.googleAppId);
+const API = 'https://www.googleapis.com/drive/v3', UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
+const FILE_FIELDS = 'id,name,version,headRevisionId,modifiedTime,ownedByMe,shared,permissionIds,owners(displayName,emailAddress,photoLink),properties,capabilities(canEdit,canShare),webViewLink,trashed';
+const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+const MOD = IS_MAC ? '⌘' : 'Ctrl', ALT = IS_MAC ? '⌥' : 'Alt';
+const PLACE_TOOLS = new Set(['mindmap', 'note', 'text', 'table']);
+
+const $ = s => document.querySelector(s);
+const app = $('#app'), stage = $('#stage'), world = $('#world'), edgesSvg = $('#edges'), nodesLayer = $('#nodes'), itemsLayer = $('#items');
+const toolbar = $('#toolbar'), itoolbar = $('#itoolbar'), dropbar = $('#dropbar'), marqueeEl = $('#marquee'), selboxEl = $('#selbox');
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 8);
+const rid = () => Math.random().toString(36).slice(2, 12);
+const ls = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); return true; } catch(e){ return false; } },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICON_MAP = '<svg viewBox="0 0 24 24"><rect x="2.5" y="9.5" width="6" height="5" rx="1.5"/><path d="M8.5 12c4 0 3-6 7-6M8.5 12c4 0 3 6 7 6"/></svg>';
+const ICON_LOCK = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const ICON_PEOPLE = '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5.8"/></svg>';
+const ICON_DEVICE = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+
+/* =========================================================================
+   State
+   ========================================================================= */
+let MODE = 'local';                 // 'local' = this browser only, 'drive' = saved to the signed-in Google Drive
+let me = null;                      // Google Drive user {displayName, emailAddress, photoLink, permissionId}
+let store = { order: [], current: null, theme: null, sidebar: true, closed: {}, hidden: {} };
+const docs = {};                    // id -> board {id,title,nodes,roots,items,updated,space,fileId,ownedByMe,...}
+const byFile = {};                  // Drive file id -> board id
+let localBoards = [];               // in drive mode: boards still sitting in this browser, offered for moving
+let doc = null;
+let parentOf = {}, depthOf = {}, rootOf = {};
+let pos = {}, itemRect = {};
+const els = new Map(), itemEls = new Map();
+let sel = new Set(), primary = null;
+let editing = null, editBefore = null;  // mind-map node being typed into
+let iedit = null;                        // {id, r, c, el, before} object being typed into
+let tableCursor = null;                  // {id, r, c}
+let tool = 'select';
+let undoStack = [], redoStack = [];
+const view = { x: 0, y: 0, z: 1 };
+let ptr = null, spaceDown = false, clip = null, dragSet = null;
+let lastPointer = null;
+
+const isNode = id => !!(doc && id != null && doc.nodes[id]);
+const isItem = id => !!(doc && id != null && doc.items[id]);
+
+/* =========================================================================
+   Model helpers
+   ========================================================================= */
+function normalize(d){
+  d.nodes = d.nodes || {}; d.roots = Array.isArray(d.roots) ? d.roots : []; d.items = d.items || {};
+  return d;
+}
+function reindex(){
+  parentOf = {}; depthOf = {}; rootOf = {};
+  doc.roots = doc.roots.filter(r => doc.nodes[r.id]);
+  for (const r of doc.roots){
+    const walk = (id, d, p) => {
+      const n = doc.nodes[id];
+      parentOf[id] = p; depthOf[id] = d; rootOf[id] = r.id;
+      n.children = n.children.filter(c => doc.nodes[c]);
+      for (const c of n.children) walk(c, d + 1, id);
+    };
+    walk(r.id, 0, null);
+  }
+}
+const isRoot = id => parentOf[id] == null;
+const rootEntry = id => doc.roots.find(r => r.id === id);
+const visibleKids = id => { const n = doc.nodes[id]; return n.collapsed ? [] : n.children; };
+function countDesc(id){ let c = 0; for (const k of doc.nodes[id].children) c += 1 + countDesc(k); return c; }
+function branchColor(id){
+  let cur = id;
+  while (cur != null){
+    const n = doc.nodes[cur];
+    if (n.color) return n.color;
+    const p = parentOf[cur];
+    if (p == null) return null;
+    if (parentOf[p] == null) return PALETTE[doc.nodes[p].children.indexOf(cur) % PALETTE.length];
+    cur = p;
+  }
+  return null;
+}
+function newNode(text = ''){
+  const id = uid();
+  doc.nodes[id] = { id, text, children: [], collapsed: false, color: null };
+  return id;
+}
+function subtreeIds(id, out = new Set()){ out.add(id); for (const k of doc.nodes[id].children) subtreeIds(k, out); return out; }
+function topLevel(ids){
+  const s = new Set(ids);
+  return ids.filter(id => { let p = parentOf[id]; while (p != null){ if (s.has(p)) return false; p = parentOf[p]; } return true; });
+}
+function cloneTree(id){
+  const n = doc.nodes[id];
+  const c = newNode(n.text);
+  Object.assign(doc.nodes[c], { color: n.color, collapsed: n.collapsed });
+  doc.nodes[c].children = n.children.map(cloneTree);
+  return c;
+}
+function exportTree(id){ const n = doc.nodes[id]; return { text: n.text, color: n.color || undefined, collapsed: n.collapsed || undefined, children: n.children.map(exportTree) }; }
+function importTree(t){
+  const id = newNode(t.text || '');
+  if (t.color) doc.nodes[id].color = t.color;
+  if (t.collapsed) doc.nodes[id].collapsed = true;
+  doc.nodes[id].children = (t.children || []).map(importTree);
+  return id;
+}
+function removeNodes(ids){
+  ids = topLevel(ids.filter(id => doc.nodes[id]));
+  let fallback = null;
+  for (const id of ids){
+    const p = parentOf[id];
+    if (p == null) doc.roots = doc.roots.filter(r => r.id !== id);
+    else { const arr = doc.nodes[p].children, i = arr.indexOf(id); arr.splice(i, 1); fallback = arr[i - 1] ?? arr[i] ?? p; }
+    for (const x of subtreeIds(id)) delete doc.nodes[x];
+  }
+  return fallback && doc.nodes[fallback] ? fallback : null;
+}
+function moveNode(id, newParent, index){
+  const p = parentOf[id];
+  if (p == null) doc.roots = doc.roots.filter(r => r.id !== id);
+  else { const a = doc.nodes[p].children; a.splice(a.indexOf(id), 1); }
+  const arr = doc.nodes[newParent].children;
+  if (index == null || index > arr.length) index = arr.length;
+  arr.splice(index, 0, id);
+  doc.nodes[newParent].collapsed = false;
+  reindex();
+}
+/* free objects */
+const nextZ = () => Object.values(doc.items).reduce((m, it) => Math.max(m, it.z || 0), 0) + 1;
+function addItem(it){ it.id = it.id || uid(); it.z = nextZ(); doc.items[it.id] = it; return it.id; }
+function itemBox(id){
+  const it = doc.items[id], r = itemRect[id];
+  return { x: it.x, y: it.y, w: r ? r.w : (it.w || 120), h: r ? r.h : (it.h || 40) };
+}
+const boxOf = id => isNode(id) ? pos[id] : isItem(id) ? itemBox(id) : null;
+
+/* ---------- outline (indented list) import/export ---------- */
+function parseOutline(text){
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter(l => l.trim());
+  const roots = [], stack = [];
+  let headLevel = 0;
+  for (const line of lines){
+    let lead = line.match(/^[\t ]*/)[0].replace(/\t/g, '    ').length;
+    const h = line.trim().match(/^(#{1,6})\s+/);
+    if (h){ headLevel = h[1].length; lead = (headLevel - 1) * 10000; }
+    else lead += headLevel * 10000;
+    const t = line.trim().replace(/^#{1,6}\s+/, '').replace(/^([-*+•◦▪‣]|\d+[.)])\s+/, '').replace(/^\[[ xX]\]\s+/, '');
+    const node = { text: t, children: [] };
+    while (stack.length && stack[stack.length - 1].ind >= lead) stack.pop();
+    if (stack.length) stack[stack.length - 1].node.children.push(node); else roots.push(node);
+    stack.push({ ind: lead, node });
+  }
+  return roots;
+}
+function outlineOf(ids){
+  const out = [];
+  const w = (id, d) => { out.push('\t'.repeat(d) + '- ' + doc.nodes[id].text.replace(/\s*\n\s*/g, ' ')); for (const k of doc.nodes[id].children) w(k, d + 1); };
+  ids.forEach(id => w(id, 0));
+  return out.join('\n');
+}
+/* ---------- tables from the clipboard ---------- */
+function squareUp(rows){
+  rows = rows.slice(0, 300).map(r => r.slice(0, 40).map(c => String(c ?? '').slice(0, 2000)));
+  const cols = Math.max(1, ...rows.map(r => r.length));
+  rows.forEach(r => { while (r.length < cols) r.push(''); });
+  while (rows.length > 1 && rows[rows.length - 1].every(c => !c.trim())) rows.pop();
+  return rows.length * cols >= 2 ? rows : null;
+}
+function parseHtmlTable(html){
+  if (!/<table/i.test(html)) return null;
+  let d; try { d = new DOMParser().parseFromString(html, 'text/html'); } catch(e){ return null; }
+  const t = d.querySelector('table'); if (!t) return null;
+  const rows = [];
+  for (const tr of t.querySelectorAll('tr')){
+    const row = [];
+    for (const cell of tr.children){
+      if (!/^T[DH]$/.test(cell.tagName)) continue;
+      row.push(cell.textContent.replace(/ /g, ' ').replace(/[ \t]*\n[ \t]*/g, '\n').replace(/\n{2,}/g, '\n').trim());
+      const span = Math.min(parseInt(cell.getAttribute('colspan') || '1', 10) || 1, 20);
+      for (let i = 1; i < span; i++) row.push('');
+    }
+    if (row.length) rows.push(row);
+  }
+  return rows.length ? squareUp(rows) : null;
+}
+/** Tab-separated text (cells copied from a spreadsheet). Leading tabs alone mean an indented list, not a table. */
+function parseTSV(text){
+  const lines = text.replace(/\r\n?/g, '\n').replace(/\n+$/, '').split('\n');
+  if (!lines.length || !lines.every(l => /[^\t]\t/.test(l))) return null;
+  return squareUp(lines.map(l => l.split('\t').map(c => c.replace(/^"([\s\S]*)"$/, '$1').trim())));
+}
+const tableTSV = it => it.rows.map(r => r.map(c => c.replace(/\s*\n\s*/g, ' ')).join('\t')).join('\n');
+const tableHTML = it => '<table>' + it.rows.map((r, i) => '<tr>' + r.map(c => (i === 0 && it.header ? '<th>' : '<td>') + esc(c) + (i === 0 && it.header ? '</th>' : '</td>')).join('') + '</tr>').join('') + '</table>';
+
+/* =========================================================================
+   History
+   ========================================================================= */
+const snapshot = () => JSON.stringify({ nodes: doc.nodes, roots: doc.roots, items: doc.items });
+function record(before){
+  undoStack.push({ s: before, sel: [...sel], primary });
+  if (undoStack.length > 400) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+function restore(entry){
+  const d = JSON.parse(entry.s);
+  doc.nodes = d.nodes; doc.roots = d.roots; doc.items = d.items || {};
+  reindex();
+  sel = new Set((entry.sel || []).filter(id => doc.nodes[id] || doc.items[id]));
+  primary = entry.primary && (doc.nodes[entry.primary] || doc.items[entry.primary]) ? entry.primary : ([...sel][0] || null);
+  touch(); render();
+}
+function undo(){
+  if (!doc) return;
+  commitEdit(); commitItemEdit();
+  const e = undoStack.pop(); if (!e) return;
+  redoStack.push({ s: snapshot(), sel: [...sel], primary });
+  restore(e); updateUndoButtons();
+}
+function redo(){
+  if (!doc) return;
+  commitEdit(); commitItemEdit();
+  const e = redoStack.pop(); if (!e) return;
+  undoStack.push({ s: snapshot(), sel: [...sel], primary });
+  restore(e); updateUndoButtons();
+}
+function updateUndoButtons(){
+  $('#undoBtn').disabled = !undoStack.length;
+  $('#redoBtn').disabled = !redoStack.length;
+}
+/** Run a mutation as one undoable step. */
+function change(fn){
+  commitEdit(); commitItemEdit();
+  const before = snapshot();
+  fn();
+  reindex();
+  if (snapshot() !== before){ record(before); touch(); }
+  render();
+}
+
+/* =========================================================================
+   Saving: this browser (local) or the signed-in Google Drive (drive)
+   ========================================================================= */
+let saveTimer = null, viewTimer = null, saveWarned = false;
+const dirty = new Set();
+function touch(){ if (!doc) return; doc.updated = Date.now(); dirty.add(doc.id); clearTimeout(saveTimer); saveTimer = setTimeout(flushSaves, MODE === 'drive' ? 1200 : 300); }
+function flushSaves(){
+  clearTimeout(saveTimer);
+  for (const id of [...dirty]){
+    dirty.delete(id);
+    const d = docs[id]; if (!d) continue;
+    if (d.space === 'local') Local.save(d);
+    else if (d.canEdit === false){ if (!d._roWarned){ d._roWarned = true; toast('You can view this board but not edit it, so changes are not saved.', 6000); } }
+    else { stashPending(d); Drive.write(d); }
+  }
+  if (doc) $('#title').placeholder = docTitle({ ...doc, title: '' });
+  renderSidebar();
+}
+function saveViewSoon(){
+  clearTimeout(viewTimer);
+  viewTimer = setTimeout(() => { if (doc) ls.set(LS_VIEW + doc.id, JSON.stringify(view)); }, 400);
+}
+const strip = d => ({ id: d.id, title: d.title || '', nodes: d.nodes, roots: d.roots, items: d.items, updated: d.updated });
+
+const Local = {
+  saveStore(){ ls.set(LS_KEY, JSON.stringify(store)); },
+  loadAll(){
+    const out = [];
+    for (const id of store.order){
+      try {
+        const d = JSON.parse(ls.get(LS_DOC + id) || 'null');
+        if (d && d.nodes && Array.isArray(d.roots)){ normalize(d); d.space = 'local'; d._loaded = true; out.push(d); }
+      } catch(e){}
+    }
+    return out;
+  },
+  save(d){
+    if (!store.order.includes(d.id)) store.order.push(d.id);
+    const ok = ls.set(LS_DOC + d.id, JSON.stringify(strip(d))) && ls.set(LS_KEY, JSON.stringify(store));
+    if (!ok && !saveWarned){ saveWarned = true; toast('This browser is out of storage space, so the latest changes were not saved. Remove some images, or use Export.', 6000); }
+  },
+  remove(id){ ls.del(LS_DOC + id); ls.del(LS_VIEW + id); store.order = store.order.filter(x => x !== id); this.saveStore(); }
+};
+
+/* ---------- Google sign-in (Google Identity Services token model: runs in the browser, no server) ---------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function loadScript(src){
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script'); s.src = src; s.async = true;
+    s.onload = resolve; s.onerror = () => reject(new Error('Could not load ' + src));
+    document.head.appendChild(s);
+  });
+}
+const Auth = {
+  token: null, expires: 0, client: null, _p: null,
+  load(){
+    return this._p || (this._p = loadScript('https://accounts.google.com/gsi/client').then(() => {
+      this.client = google.accounts.oauth2.initTokenClient({ client_id: CFG.googleClientId, scope: CFG.scope, callback: () => {} });
+    }));
+  },
+  valid(){ return !!this.token && this.expires > Date.now() + 30000; },
+  cached(){
+    try {
+      const t = JSON.parse(ls.get(LS_TOKEN) || 'null');
+      if (t && t.v && t.exp > Date.now() + 120000){ this.token = t.v; this.expires = t.exp; return true; }
+    } catch(e){}
+    return false;
+  },
+  /** Opens Google's sign-in popup, so it must be called straight from a click. */
+  request(){
+    return new Promise((resolve, reject) => {
+      if (!this.client){ reject(new Error('not-loaded')); return; }
+      this.client.callback = r => {
+        if (r.error){ reject(r); return; }
+        if (!google.accounts.oauth2.hasGrantedAllScopes(r, CFG.scope)){ reject({ error: 'scope' }); return; }
+        this.token = r.access_token;
+        this.expires = Date.now() + (Number(r.expires_in) || 3600) * 1000 - 60000;
+        ls.set(LS_TOKEN, JSON.stringify({ v: this.token, exp: this.expires }));
+        resolve();
+      };
+      this.client.error_callback = e => reject(e);
+      this.client.requestAccessToken({ prompt: '', login_hint: store.email || undefined });
+    });
+  },
+  forget(){
+    try { if (this.token && window.google && google.accounts) google.accounts.oauth2.revoke(this.token, () => {}); } catch(e){}
+    this.token = null; this.expires = 0; ls.del(LS_TOKEN);
+  }
+};
+function authErrorText(e){
+  const t = e && (e.type || e.error || e.message);
+  if (t === 'not-loaded') return 'Google sign-in is still loading. Try again in a moment.';
+  if (t === 'popup_failed_to_open') return 'The Google sign-in window was blocked. Allow pop-ups for this site and try again.';
+  if (t === 'popup_closed') return 'Sign-in was cancelled.';
+  if (t === 'scope') return 'Please allow the Google Drive permission, so the app can save your boards.';
+  if (t === 'access_denied') return 'Google sign-in was declined.';
+  return 'Google sign-in did not work. Check that this web address is allowed on the OAuth client (see SETUP.md).';
+}
+
+/* ---------- Drive REST calls ---------- */
+function driveError(status, msg, reason){ const e = new Error(msg || 'Google Drive error'); e.status = status; e.reason = reason || ''; return e; }
+/** Call the Drive API with the signed-in user's token. Rate limits and server errors are retried with backoff. */
+async function gfetch(url, opts = {}, tries = 0){
+  if (!Auth.valid()) throw driveError(401, 'Signed out', 'auth');
+  let res;
+  try { res = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + Auth.token, ...(opts.headers || {}) } }); }
+  catch(e){
+    if (tries < 2){ await sleep(1000 * (tries + 1)); return gfetch(url, opts, tries + 1); }
+    throw driveError(0, 'Offline', 'network');
+  }
+  if (res.ok){
+    if (res.status === 204) return null;
+    return opts.text ? res.text() : res.json();
+  }
+  let body = null; try { body = await res.json(); } catch(e){}
+  const err = body && body.error, reason = (err && err.errors && err.errors[0] && err.errors[0].reason) || '';
+  if (res.status === 401){ Auth.token = null; ls.del(LS_TOKEN); throw driveError(401, 'Signed out', 'auth'); }
+  if ((res.status === 429 || res.status >= 500 || /rateLimitExceeded/.test(reason)) && tries < 4){
+    await sleep(2 ** tries * 800 + Math.random() * 600);
+    return gfetch(url, opts, tries + 1);
+  }
+  throw driveError(res.status, err && err.message, reason);
+}
+const qs = o => Object.entries(o).filter(([, v]) => v != null).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
+const jsonReq = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+const fileUrl = (id, rest = '') => `${API}/files/${encodeURIComponent(id)}${rest}`;
+function multipart(meta, content){
+  const b = 'mm' + rid() + rid();
+  return {
+    headers: { 'Content-Type': 'multipart/related; boundary=' + b },
+    body: `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${content}\r\n--${b}--`
+  };
+}
+
+/* ---------- Google Drive as the database ----------
+   One folder holds one JSON file per board. Every board file is tagged with Drive "properties"
+   (mmKind=board, mmId=<board id>), so the app finds its boards with a query, like rows in a table.
+   Each save replaces the file's contents; Drive keeps the older versions in the file's version history. */
+const revOf = f => f.headRevisionId || ('v' + f.version);
+const fileName = d => docTitle(d).replace(/[\\/:*?"<>|\n\r]+/g, ' ').trim().slice(0, 120) + '.mindmap.json';
+/** Remember the versions this tab wrote or loaded, so their echoes in a listing are never mistaken for someone else's edit. */
+function known(d, rev){ (d._known = d._known || []).push(rev); if (d._known.length > 50) d._known.shift(); }
+function applyMeta(d, f){
+  d.fileId = f.id; byFile[f.id] = d.id;
+  d.ownedByMe = f.ownedByMe !== false;
+  d.space = (f.shared || !d.ownedByMe) ? 'shared' : 'private';
+  const o = (f.owners || [])[0] || {};
+  d.ownerName = o.displayName || o.emailAddress || ''; d.ownerPhoto = o.photoLink || '';
+  const p = f.permissionIds || [];
+  d.members = p.filter(x => x !== 'anyoneWithLink');
+  d.linkAccess = p.includes('anyoneWithLink') ? 'edit' : 'none';
+  d.canEdit = !f.capabilities || f.capabilities.canEdit !== false;
+  d.canShare = !!(f.capabilities && f.capabilities.canShare);
+  d.webViewLink = f.webViewLink || '';
+}
+const Drive = {
+  folderId: null, _folder: null,
+  /** Find or create the boards folder. Saves that start together share one lookup, so only one folder is made. */
+  ensureFolder(){
+    if (this.folderId) return Promise.resolve(this.folderId);
+    return this._folder || (this._folder = (async () => {
+      const q = "properties has { key='mmKind' and value='root' } and trashed=false and 'me' in owners";
+      const r = await gfetch(`${API}/files?${qs({ q, fields: 'files(id)', pageSize: 10, spaces: 'drive' })}`);
+      if (r.files && r.files.length) return (this.folderId = r.files[0].id);
+      const f = await gfetch(`${API}/files?fields=id`, jsonReq('POST', { name: CFG.folderName, mimeType: 'application/vnd.google-apps.folder', properties: { mmKind: 'root' } }));
+      return (this.folderId = f.id);
+    })().finally(() => { this._folder = null; }));
+  },
+  /** Every board this account can reach: its own, plus boards shared with it that it has opened. */
+  async list(){
+    const q = "properties has { key='mmKind' and value='board' } and trashed=false";
+    const out = []; let pageToken = null;
+    do {
+      const r = await gfetch(`${API}/files?${qs({ q, fields: `nextPageToken,files(${FILE_FIELDS})`, pageSize: 200, spaces: 'drive', pageToken })}`);
+      out.push(...(r.files || [])); pageToken = r.nextPageToken;
+    } while (pageToken);
+    return out;
+  },
+  get(id){ return gfetch(fileUrl(id, '?' + qs({ fields: FILE_FIELDS, supportsAllDrives: true }))); },
+  async fetchBody(id){
+    const [meta, text] = await Promise.all([this.get(id), gfetch(fileUrl(id, '?alt=media&supportsAllDrives=true'), { text: true })]);
+    let j = null; try { j = JSON.parse(text); } catch(e){}
+    if (!j || !j.nodes || !Array.isArray(j.roots)) throw driveError(422, 'This file is not a board', 'format');
+    return { meta, title: j.title || '', updated: j.updated || 0, body: normalize({ nodes: j.nodes, roots: j.roots, items: j.items }) };
+  },
+  /** Save a board. Calls made while a save is running are folded into one more save afterwards. */
+  write(d){
+    if (d._writing){ d._again = true; return d._wp; }
+    d._writing = true;
+    d._wp = (async () => {
+      try {
+        do {
+          d._again = false;
+          const content = JSON.stringify({ format: 'mindmap', version: 2, ...strip(d) });
+          const meta = { name: fileName(d), properties: { mmKind: 'board', mmId: d.id } };
+          const q = '?' + qs({ uploadType: 'multipart', fields: FILE_FIELDS, supportsAllDrives: true });
+          let f;
+          if (!d.fileId){
+            meta.parents = [await this.ensureFolder()]; meta.mimeType = 'application/json';
+            f = await gfetch(`${UPLOAD}/files${q}`, { method: 'POST', ...multipart(meta, content) });
+          } else {
+            f = await gfetch(`${UPLOAD}/files/${encodeURIComponent(d.fileId)}${q}`, { method: 'PATCH', ...multipart(meta, content) });
+          }
+          applyMeta(d, f);
+          d._rev = d._remoteRev = revOf(f); known(d, d._rev);
+          d._loaded = true; d._fails = 0;
+        } while (d._again);
+        if (!dirty.has(d.id)) clearPending(d);
+        if (d._conflict){ d._conflict = false; toast('Someone else edited this board at the same time. Your version was saved; theirs is in the file’s version history in Google Drive.', 7000); }
+        setSyncState('');
+      } catch(err){ this.fail(err, d); }
+      finally { d._writing = false; if (doc === d && d._pending && !editing && !iedit && !ptr) applyPending(); }
+    })();
+    return d._wp;
+  },
+  fail(err, d){
+    const s = err && err.status;
+    const retry = ms => { dirty.add(d.id); setTimeout(() => { if (dirty.has(d.id)) flushSaves(); }, ms); };
+    if (s === 401){ dirty.add(d.id); authLost(); return; }
+    if (s === 0){ setSyncState('offline'); retry(8000); return; }
+    d._fails = (d._fails || 0) + 1;
+    if (d._fails > 4){ toast('Saving to Google Drive keeps failing. Your changes are kept in this browser; reload the page to try again.', 8000); return; }
+    if (s === 404){
+      if (!d.fileId){ this.folderId = null; retry(500); return; }   // the boards folder was deleted: make a new one
+      // The file was deleted, or it is no longer shared with you: keep the work as a new board of your own.
+      delete byFile[d.fileId];
+      Object.assign(d, { fileId: null, ownedByMe: true, space: 'private', members: [], linkAccess: 'none', _known: [] });
+      toast('This board was removed from Google Drive or is no longer shared with you, so your copy was saved as a new board.', 7000);
+      retry(500); updateSpace(); return;
+    }
+    if (s === 403 && /insufficient|cannotModify/i.test(err.reason)){ d.canEdit = false; toast('You can view this board, but the owner has not given you edit access, so your changes were not saved.', 7000); return; }
+    if (/storageQuotaExceeded|quotaExceeded/.test(err.reason)){ toast('Your Google Drive is full, so this change was not saved.', 7000); return; }
+    toast('Changes could not be saved to Google Drive right now. They are kept in this browser and will be retried.', 6000);
+    retry(15000);
+  },
+  trash(d){ return gfetch(fileUrl(d.fileId, '?supportsAllDrives=true'), jsonReq('PATCH', { trashed: true })); },
+  tag(id){ return gfetch(fileUrl(id, '?' + qs({ fields: FILE_FIELDS, supportsAllDrives: true })), jsonReq('PATCH', { properties: { mmKind: 'board', mmId: id } })); },
+  perms(d){ return gfetch(fileUrl(d.fileId, '/permissions?' + qs({ fields: 'permissions(id,type,role,emailAddress,displayName,photoLink,domain)', supportsAllDrives: true }))).then(r => r.permissions || []); },
+  addPerm(d, body, notify){
+    return gfetch(fileUrl(d.fileId, '/permissions?' + qs({ sendNotificationEmail: notify ? 'true' : null, emailMessage: notify ? 'I shared a mind map with you. Open it here: ' + boardLink(d) : null, supportsAllDrives: true })), jsonReq('POST', body));
+  },
+  delPerm(d, pid){ return gfetch(fileUrl(d.fileId, `/permissions/${encodeURIComponent(pid)}?supportsAllDrives=true`), { method: 'DELETE' }); },
+  async refresh(d){ applyMeta(d, await this.get(d.fileId)); }
+};
+
+/* ---------- keeping boards in step with Drive (other tabs, other computers, other people) ---------- */
+function docForFile(f){
+  let id = byFile[f.id];
+  if (!id || !docs[id]){
+    const m = f.properties && f.properties.mmId;
+    // A copy of a board made in Drive keeps the same mmId, so it is told apart by its file id.
+    const taken = m && docs[m] && docs[m].fileId && docs[m].fileId !== f.id;
+    id = m && /^[\w-]+$/.test(m) && !taken ? m : f.id;
+    if (!docs[id]) docs[id] = normalize({ id, title: '', nodes: {}, roots: [], items: {}, updated: 0, space: 'private', _loaded: false });
+    byFile[f.id] = id;
+  }
+  return docs[id];
+}
+/** Fold one file from a Drive listing into the boards in memory. A board's contents are downloaded only when it is opened. */
+function ingestMeta(f){
+  if (store.hidden[f.id]) return null;
+  const d = docForFile(f);
+  applyMeta(d, f);
+  if (d._writing) return d;                 // our own save is in flight; its result is the newest version
+  const rev = revOf(f);
+  d._remoteRev = rev;
+  if (!d._loaded){
+    if (!dirty.has(d.id)){ d.title = f.name.replace(/\.mindmap\.json$/i, ''); d.updated = Date.parse(f.modifiedTime) || d.updated; }
+    return d;
+  }
+  if (d._known && d._known.includes(rev)) return d;
+  if (dirty.has(d.id)){ d._conflict = true; return d; }
+  if (d === doc) refreshOpen(d); else d._loaded = false;   // others are downloaded again when next opened
+  return d;
+}
+async function refreshOpen(d){
+  if (d._refreshing) return;
+  d._refreshing = true;
+  try {
+    const r = await Drive.fetchBody(d.fileId);
+    d._rev = revOf(r.meta); known(d, d._rev);
+    if (dirty.has(d.id) || d._writing){ d._conflict = true; return; }
+    d.updated = r.updated || d.updated;
+    if (doc === d && document.activeElement !== $('#title')){ d.title = r.title; $('#title').value = d.title; }
+    d._pending = r.body;
+    if (doc === d && !editing && !iedit && !ptr) applyPending();
+  } catch(e){ if (e.status === 401) authLost(); }
+  finally { d._refreshing = false; }
+}
+function applyPending(){
+  const d = doc; if (!d || !d._pending) return;
+  const p = d._pending; d._pending = null;
+  if (dirty.has(d.id) || d._writing) return;   // local edits made meanwhile win; they are saved next
+  d.nodes = p.nodes; d.roots = p.roots; d.items = p.items;
+  render();
+  updateSpace();
+}
+function remoteRemoved(d){
+  if (!docs[d.id] || dirty.has(d.id) || d._writing) return;   // unsaved work is kept: the next save makes it a new board
+  delete docs[d.id];
+  if (d.fileId) delete byFile[d.fileId];
+  if (doc === d){ doc = null; openFallback(); toast('That board was deleted or is no longer shared with you'); }
+}
+const Sync = {
+  timer: null, busy: false,
+  start(){ clearInterval(this.timer); this.timer = setInterval(() => this.poll(), Math.max(5, Number(CFG.pollSeconds) || 20) * 1000); },
+  stop(){ clearInterval(this.timer); this.timer = null; },
+  async poll(force){
+    if (MODE !== 'drive' || this.busy || (document.hidden && !force)) return;
+    if (!Auth.valid()){ authLost(); return; }
+    this.busy = true;
+    try {
+      const files = await Drive.list();
+      const seen = new Set();
+      for (const f of files){ const d = ingestMeta(f); if (d) seen.add(d.id); }
+      for (const d of Object.values(docs).filter(x => x.fileId && !seen.has(x.id) && !x._writing && !dirty.has(x.id))){
+        // Drive search can lag a few seconds behind a change, so confirm before dropping a board.
+        try { const f = await Drive.get(d.fileId); if (f.trashed || store.hidden[f.id]) remoteRemoved(d); else ingestMeta(f); }
+        catch(e){ if (e.status === 404 || e.status === 403) remoteRemoved(d); else throw e; }
+      }
+      setSyncState('');
+      renderSidebar();
+    } catch(e){ if (e.status === 401) authLost(); else if (e.status === 0) setSyncState('offline'); }
+    finally { this.busy = false; }
+  }
+};
+document.addEventListener('visibilitychange', () => { if (!document.hidden) Sync.poll(); });
+window.addEventListener('online', () => { if (MODE === 'drive'){ flushSaves(); Sync.poll(true); } });
+
+let syncState = '';
+function setSyncState(s){
+  if (s === syncState) return;
+  const was = syncState; syncState = s;
+  if (s === 'offline') banner('You are offline. Changes are kept in this browser and upload to Google Drive when you are back online.');
+  else if (was === 'offline') banner('');
+}
+/** Google access tokens last about an hour. Getting a new one opens a popup, so it has to wait for a click. */
+function authLost(){
+  if (MODE !== 'drive' || $('#banner').dataset.kind === 'auth') return;
+  Sync.stop();
+  banner('Your Google session expired. Unsaved changes are kept in this browser.', 'Reconnect', () => {
+    Auth.request().then(() => { banner(''); flushSaves(); Sync.start(); Sync.poll(true); }, e => toast(authErrorText(e), 6000));
+  }, 'auth');
+}
+
+/* ---------- safety net: unsaved Drive edits are mirrored in this browser until Drive confirms them ---------- */
+function stashPending(d){ ls.set(LS_PEND + d.id, JSON.stringify({ fileId: d.fileId || null, base: d._rev || null, account: me && me.emailAddress, data: strip(d) })); }
+function clearPending(d){ ls.del(LS_PEND + d.id); }
+function driveCopy(data, suffix){
+  const id = uid(), body = normalize({ nodes: data.nodes, roots: data.roots, items: data.items });
+  return (docs[id] = { id, ...body, title: docTitle({ ...body, title: data.title }) + suffix, updated: Date.now(), space: 'private', ownedByMe: true, _loaded: true });
+}
+/** After signing in, upload edits that never reached Drive (closed tab, expired session, lost connection). */
+function replayPending(){
+  const keys = [];
+  try { for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (k && k.startsWith(LS_PEND)) keys.push(k); } } catch(e){}
+  let n = 0;
+  for (const k of keys){
+    let p = null; try { p = JSON.parse(ls.get(k)); } catch(e){}
+    if (!p || !p.data || (p.account && me && p.account !== me.emailAddress)) continue;
+    const id = k.slice(LS_PEND.length);
+    let d = docs[id] || (p.fileId && docs[byFile[p.fileId]]);
+    if (d && (!p.base || p.base === d._remoteRev)){
+      // Nobody changed the board since: these edits simply continue it.
+      Object.assign(d, normalize({ nodes: p.data.nodes, roots: p.data.roots, items: p.data.items }), { title: p.data.title || '', updated: p.data.updated || Date.now(), _loaded: true, _rev: d._remoteRev });
+      known(d, d._remoteRev);
+    } else if (!d && !p.fileId){
+      d = docs[id] = { ...normalize({ nodes: p.data.nodes, roots: p.data.roots, items: p.data.items }), id, title: p.data.title || '', updated: p.data.updated || Date.now(), space: 'private', ownedByMe: true, _loaded: true };
+    } else {
+      // The board changed elsewhere, or is gone: keep these edits as a separate board instead of overwriting anything.
+      ls.del(k);
+      d = driveCopy(p.data, d ? ' (unsaved changes)' : '');
+    }
+    dirty.add(d.id); n++;
+  }
+  if (n){ flushSaves(); toast(`Restored unsaved changes to ${n} board${n === 1 ? '' : 's'}`, 4000); }
+}
+
+/* ---------- Google Picker: how someone grants this app access to a board shared with them ---------- */
+const Picker = {
+  _p: null,
+  load(){ return this._p || (this._p = loadScript('https://apis.google.com/js/api.js').then(() => new Promise((res, rej) => gapi.load('picker', { callback: res, onerror: rej })))); },
+  async pick({ fileIds = null, title = 'Choose boards to open' } = {}){
+    await this.load();
+    return new Promise(resolve => {
+      const P = google.picker;
+      const v = new P.DocsView(P.ViewId.DOCS).setMimeTypes('application/json').setIncludeFolders(true).setMode(P.DocsViewMode.LIST);
+      if (fileIds && v.setFileIds) v.setFileIds(fileIds.join(','));
+      new P.PickerBuilder()
+        .addView(v)
+        .enableFeature(P.Feature.MULTISELECT_ENABLED)
+        .setOAuthToken(Auth.token).setDeveloperKey(CFG.googleApiKey).setAppId(CFG.googleAppId)
+        .setTitle(title)
+        .setCallback(data => {
+          const a = data[P.Response.ACTION];
+          if (a === P.Action.PICKED) resolve((data[P.Response.DOCUMENTS] || []).map(x => x[P.Document.ID]));
+          else if (a === P.Action.CANCEL) resolve([]);
+        })
+        .build().setVisible(true);
+    });
+  }
+};
+async function addFromDrive(ids){
+  let added = 0, last = null;
+  for (const id of ids){
+    try {
+      let f = await Drive.get(id);
+      if (!(f.properties && f.properties.mmKind === 'board')){
+        // A board file put in Drive by hand (for example an Export): tag it so it is found from now on.
+        await Drive.fetchBody(id);
+        f = await Drive.tag(id);
+      }
+      delete store.hidden[f.id];
+      last = ingestMeta(f); added++;
+    } catch(e){ if (e.status === 401){ authLost(); return 0; } }
+  }
+  Local.saveStore(); renderSidebar();
+  if (last) openDoc(last.id);
+  toast(added ? `Opened ${added} board${added === 1 ? '' : 's'} from Google Drive` : 'Those files are not boards, or you do not have access to them.', 5000);
+  return added;
+}
+
+/* =========================================================================
+   Rendering & layout
+   ========================================================================= */
+function makeNodeEl(id){
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.dataset.id = id;
+  el.innerHTML = '<div class="label" spellcheck="false"></div><button class="tog" tabindex="-1" title="Collapse (' + MOD + '/)"></button><button class="badge" tabindex="-1" title="Expand"></button><button class="plus" tabindex="-1" title="Add child (Tab)" aria-label="Add child"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></button><button class="sib" tabindex="-1" title="Add sibling below (Enter)" aria-label="Add sibling"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></button>';
+  return el;
+}
+function clearCanvas(){
+  for (const el of els.values()) el.remove(); els.clear();
+  for (const el of itemEls.values()) el.remove(); itemEls.clear();
+  edgesSvg.innerHTML = ''; pos = {}; itemRect = {};
+  toolbar.hidden = true; itoolbar.hidden = true; selboxEl.hidden = true;
+}
+
+function render(){
+  if (!doc){ clearCanvas(); updateHint(); return; }
+  reindex();
+  renderItems();
+  const vis = [];
+  for (const r of doc.roots){ const walk = id => { vis.push(id); for (const k of visibleKids(id)) walk(k); }; walk(r.id); }
+  const visSet = new Set(vis);
+  for (const id of [...sel]) if (!visSet.has(id) && !doc.items[id]) sel.delete(id);
+  if (primary && !visSet.has(primary) && !doc.items[primary]) primary = [...sel].pop() || null;
+  if (editing && !visSet.has(editing)) editing = null;
+
+  for (const [id, el] of els) if (!visSet.has(id)){ el.remove(); els.delete(id); }
+  for (const id of vis){
+    let el = els.get(id);
+    if (!el){ el = makeNodeEl(id); els.set(id, el); nodesLayer.appendChild(el); }
+    const n = doc.nodes[id], root = isRoot(id);
+    el.className = 'node' + (root ? ' root' : depthOf[id] === 1 ? ' l1' : '') +
+      (sel.has(id) ? ' sel' : '') + (editing === id ? ' editing' : '') +
+      (n.children.length ? ' has-kids' : '') + (n.collapsed && n.children.length ? ' collapsed' : '') +
+      (dragSet && dragSet.has(id) ? ' dragging' : '') + (pos[id] && pos[id].dir < 0 ? ' left' : '');
+    el.style.setProperty('--c', branchColor(id) || 'var(--muted)');
+    el.style.setProperty('--add', root ? 'var(--sel)' : (branchColor(id) || 'var(--sel)'));
+    const label = el.firstChild;
+    label.dataset.ph = root ? 'Central idea' : '';
+    if (editing !== id && label.textContent !== n.text) label.textContent = n.text;
+    if (n.collapsed && n.children.length) el.querySelector('.badge').textContent = countDesc(id);
+  }
+  const size = {};
+  for (const id of vis){ const el = els.get(id); size[id] = { w: el.offsetWidth, h: el.offsetHeight }; }
+  pos = {};
+  for (const r of doc.roots) layoutRoot(r, size);
+  for (const id of vis){
+    const p = pos[id], el = els.get(id);
+    el.style.transform = `translate(${p.x}px,${p.y}px)`;
+    el.classList.toggle('left', p.dir < 0);
+  }
+  drawEdges(vis);
+  updateSelBox();
+  updateToolbar();
+  updateHint();
+}
+
+function itemSig(it){
+  if (it.type === 'image') return 'i' + JSON.stringify(it.src);
+  if (it.type === 'table') return 't' + (it.header ? 1 : 0) + JSON.stringify(it.rows);
+  return 'x' + (it.text || '');
+}
+function imgSrc(src){ return (src && src.data) || ''; }   // images live inside the board file as compressed data URLs
+function buildItem(el, it){
+  el.innerHTML = '';
+  el.classList.remove('broken');
+  if (it.type === 'image'){
+    const img = document.createElement('img');
+    img.alt = ''; img.draggable = false;
+    img.onerror = () => el.classList.add('broken');
+    img.src = imgSrc(it.src);
+    el.appendChild(img);
+    el.insertAdjacentHTML('beforeend', '<div class="rh" title="Drag to resize"></div>');
+  } else if (it.type === 'table'){
+    const t = document.createElement('table');
+    it.rows.forEach((row, r) => {
+      const tr = document.createElement('tr');
+      if (r === 0 && it.header) tr.className = 'head';
+      row.forEach((c, ci) => { const td = document.createElement('td'); td.dataset.r = r; td.dataset.c = ci; td.spellcheck = false; td.textContent = c; tr.appendChild(td); });
+      t.appendChild(tr);
+    });
+    el.appendChild(t);
+  } else {
+    const b = document.createElement('div'); b.className = 'ibody'; b.spellcheck = false; b.textContent = it.text || '';
+    el.appendChild(b);
+    if (it.type === 'note') el.insertAdjacentHTML('beforeend', '<div class="rh" title="Drag to resize"></div>');
+  }
+}
+function renderItems(){
+  const list = Object.values(doc.items).sort((a, b) => (a.z || 0) - (b.z || 0));
+  const live = new Set(list.map(i => i.id));
+  for (const [id, el] of itemEls) if (!live.has(id)){ el.remove(); itemEls.delete(id); delete itemRect[id]; }
+  list.forEach((it, i) => {
+    let el = itemEls.get(it.id);
+    if (!el){ el = document.createElement('div'); el.dataset.id = it.id; itemEls.set(it.id, el); }
+    const isEd = iedit && iedit.id === it.id;
+    if (itemsLayer.children[i] !== el && !isEd) itemsLayer.insertBefore(el, itemsLayer.children[i] || null);
+    const sig = itemSig(it);
+    if (el._sig !== sig && !isEd){ el._sig = sig; buildItem(el, it); }
+    const broken = el.classList.contains('broken');
+    el.className = 'item item-' + it.type + (sel.has(it.id) ? ' sel' : '') + (isEd ? ' editing' : '') + (broken ? ' broken' : '');
+    el.style.transform = `translate(${it.x}px,${it.y}px)`;
+    if (it.type === 'image'){ el.style.width = it.w + 'px'; el.style.height = it.h + 'px'; }
+    if (it.type === 'note'){ el.style.width = (it.w || 220) + 'px'; el.style.background = it.color || NOTE_COLORS[0]; }
+    if (it.type === 'table'){
+      for (const td of el.querySelectorAll('td.cur')) td.classList.remove('cur');
+      if (tableCursor && tableCursor.id === it.id && sel.has(it.id) && !isEd){
+        const td = el.querySelector(`td[data-r="${tableCursor.r}"][data-c="${tableCursor.c}"]`); if (td) td.classList.add('cur');
+      }
+    }
+  });
+  for (const it of list){ const el = itemEls.get(it.id); itemRect[it.id] = { w: el.offsetWidth, h: el.offsetHeight }; }
+}
+
+function layoutRoot(r, size){
+  const memo = {};
+  const vgap = id => isRoot(id) ? VGAP_ROOT : depthOf[id] === 1 ? VGAP_L1 : VGAP;
+  const hgap = id => isRoot(id) ? HGAP_ROOT : HGAP;
+  const sh = id => {
+    if (memo[id] != null) return memo[id];
+    const ks = visibleKids(id);
+    let t = size[id].h;
+    if (ks.length){ let s = vgap(id) * (ks.length - 1); for (const k of ks) s += sh(k); t = Math.max(t, s); }
+    return (memo[id] = t);
+  };
+  const place = (id, ax, cy, dir) => {
+    const s = size[id];
+    pos[id] = { x: dir > 0 ? ax : ax - s.w, y: cy - s.h / 2, w: s.w, h: s.h, dir };
+    placeKids(id, visibleKids(id), dir);
+  };
+  const placeKids = (id, ks, dir) => {
+    if (!ks.length) return;
+    const p = pos[id], g = vgap(id);
+    let total = -g; for (const k of ks) total += sh(k) + g;
+    let y = p.y + p.h / 2 - total / 2;
+    const ax = dir > 0 ? p.x + p.w + hgap(id) : p.x - hgap(id);
+    for (const k of ks){ const h = sh(k); place(k, ax, y + h / 2, dir); y += h + g; }
+  };
+  const s = size[r.id];
+  pos[r.id] = { x: r.x - s.w / 2, y: r.y - s.h / 2, w: s.w, h: s.h, dir: 0 };
+  const ks = visibleKids(r.id);
+  if (r.layout === 'left') placeKids(r.id, ks, -1);
+  else if (r.layout === 'both'){
+    const tot = ks.reduce((a, k) => a + sh(k), 0);
+    const right = [], left = []; let acc = 0;
+    for (const k of ks){ if (!right.length || acc + sh(k) / 2 <= tot / 2){ right.push(k); acc += sh(k); } else left.push(k); }
+    placeKids(r.id, right, 1); placeKids(r.id, left, -1);
+  } else placeKids(r.id, ks, 1);
+}
+
+function drawEdges(vis){
+  let out = '';
+  for (const id of vis){
+    const p = parentOf[id]; if (p == null) continue;
+    const a = pos[p], b = pos[id], dir = b.dir;
+    const sx = dir > 0 ? a.x + a.w : a.x, sy = a.y + a.h / 2;
+    const ex = dir > 0 ? b.x : b.x + b.w, ey = b.y + b.h / 2;
+    const L = (ex - sx) * 0.62;
+    const d = `M${sx} ${sy}C${sx + L * .5} ${sy} ${sx + L * .5} ${ey} ${sx + L} ${ey}L${ex} ${ey}`;
+    out += `<path d="${d}" stroke="${branchColor(id)}"${dragSet && dragSet.has(id) ? ' class="dim"' : ''}/>`;
+  }
+  edgesSvg.innerHTML = out;
+}
+function updateSelBox(){
+  if (!doc || sel.size < 2){ selboxEl.hidden = true; return; }
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const id of sel){ const b = boxOf(id); if (!b) continue; x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }
+  if (!isFinite(x0)){ selboxEl.hidden = true; return; }
+  selboxEl.hidden = false;
+  Object.assign(selboxEl.style, { left: (x0 - 8) + 'px', top: (y0 - 8) + 'px', width: (x1 - x0 + 16) + 'px', height: (y1 - y0 + 16) + 'px' });
+}
+function updateHint(){
+  const h = $('#hint');
+  if (!doc){
+    h.hidden = !$('#loading').hidden;
+    h.innerHTML = `<h2>No boards yet</h2>${MODE === 'drive' ? 'Boards are saved to your Google Drive and stay private to you until you share them.' : 'Boards are saved in this browser.'}<div class="row"><button class="btn primary" data-h="new">New board</button><button class="btn" data-h="example">Add the example boards</button></div>`;
+    return;
+  }
+  const empty = !doc.roots.length && !Object.keys(doc.items).length;
+  h.hidden = !empty;
+  if (empty) h.innerHTML = `Double-click the canvas or press <kbd>M</kbd> to start a mind map.<br>Paste a table or an image to add it.`;
+}
+
+/* =========================================================================
+   View (pan / zoom)
+   ========================================================================= */
+function applyView(){
+  world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.z})`;
+  const g = 24 * view.z;
+  stage.style.backgroundSize = `${g}px ${g}px`;
+  stage.style.backgroundPosition = `${view.x}px ${view.y}px`;
+  $('#zoomPct').textContent = Math.round(view.z * 100) + '%';
+  positionToolbar();
+  saveViewSoon();
+}
+let anim = 0;
+function animateView(t, ms = 220){
+  cancelAnimationFrame(anim);
+  const s = { ...view }, t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+    view.x = s.x + (t.x - s.x) * e; view.y = s.y + (t.y - s.y) * e; view.z = s.z + (t.z - s.z) * e;
+    applyView();
+    if (k < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+const stageRect = () => stage.getBoundingClientRect();
+function toWorld(cx, cy){ const r = stageRect(); return { x: (cx - r.left - view.x) / view.z, y: (cy - r.top - view.y) / view.z }; }
+function centerWorld(){ const r = stageRect(); return toWorld(r.left + r.width / 2, r.top + r.height / 2); }
+let lastPaste = null;
+function pastePoint(){
+  const r = stageRect();
+  let p = (lastPointer && Date.now() - lastPointer.t < 60000 && lastPointer.x > r.left && lastPointer.x < r.right && lastPointer.y > r.top && lastPointer.y < r.bottom)
+    ? toWorld(lastPointer.x, lastPointer.y) : centerWorld();
+  // pasting again at the same spot steps each copy down-right so they don't stack exactly
+  if (lastPaste && Math.abs(lastPaste.bx - p.x) < 2 && Math.abs(lastPaste.by - p.y) < 2) lastPaste.n++;
+  else lastPaste = { bx: p.x, by: p.y, n: 0 };
+  return { x: p.x + lastPaste.n * 32, y: p.y + lastPaste.n * 32 };
+}
+function zoomTarget(z, sx, sy){
+  z = clamp(z, 0.1, 3);
+  const wx = (sx - view.x) / view.z, wy = (sy - view.y) / view.z;
+  return { z, x: sx - wx * z, y: sy - wy * z };
+}
+function zoomBy(f){ const r = stageRect(); animateView(zoomTarget(view.z * f, r.width / 2, r.height / 2), 160); }
+function zoomTo(z){ const r = stageRect(); animateView(zoomTarget(z, r.width / 2, r.height / 2)); }
+function allIds(){ return doc ? [...Object.keys(pos), ...Object.keys(doc.items)] : []; }
+function fit(ids, maxZ = 1.2, instant = false){
+  ids = (ids || allIds()).filter(id => boxOf(id));
+  if (!ids.length) return;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const id of ids){ const p = boxOf(id); x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x + p.w); y1 = Math.max(y1, p.y + p.h); }
+  const r = stageRect(), pad = r.width < 600 ? 24 : 80, left = r.width < 600 ? 0 : 50;
+  const z = clamp(Math.min((r.width - pad * 2 - left) / (x1 - x0 || 1), (r.height - pad * 2 - 50) / (y1 - y0 || 1)), 0.1, maxZ);
+  const t = { z, x: (r.width + left) / 2 - ((x0 + x1) / 2) * z, y: (r.height + 30) / 2 - ((y0 + y1) / 2) * z };
+  if (instant){ Object.assign(view, t); applyView(); } else animateView(t);
+}
+function zoomKey(k){
+  if (k === '0') zoomTo(1);
+  else if (k === '1') fit();
+  else if (k === '2') fit(sel.size ? [...sel].flatMap(id => isNode(id) ? [...subtreeIds(id)] : [id]) : null, 1.6);
+}
+function ensureVisible(id){
+  const p = boxOf(id); if (!p) return;
+  const r = stageRect(), m = 48, top = 70, left = r.width < 600 ? m : 70;
+  const sx = view.x + p.x * view.z, sy = view.y + p.y * view.z, sw = p.w * view.z, shh = p.h * view.z;
+  let dx = 0, dy = 0;
+  if (sx < left) dx = left - sx; else if (sx + sw > r.width - m) dx = Math.max((r.width - m) - (sx + sw), left - sx);
+  if (sy < top) dy = top - sy; else if (sy + shh > r.height - m) dy = (r.height - m) - (sy + shh);
+  if (dx || dy) animateView({ x: view.x + dx, y: view.y + dy, z: view.z }, 180);
+}
+
+/* =========================================================================
+   Selection & editing
+   ========================================================================= */
+function select(id, add = false){
+  if (!add) sel.clear();
+  if (id != null && (isNode(id) || isItem(id))){ sel.add(id); primary = id; } else if (!add) primary = null;
+  refreshSel();
+}
+function refreshSel(){
+  for (const [id, el] of els) el.classList.toggle('sel', sel.has(id));
+  for (const [id, el] of itemEls) el.classList.toggle('sel', sel.has(id));
+  if (tableCursor && !sel.has(tableCursor.id)) tableCursor = null;
+  updateSelBox(); updateToolbar();
+}
+function selectAll(){ sel = new Set(allIds()); primary = primary || [...sel][0] || null; refreshSel(); }
+
+const readText = el => el.innerText.replace(/ /g, ' ');
+function makeEditable(t){
+  try { t.contentEditable = 'plaintext-only'; } catch(e){}
+  if (t.contentEditable !== 'plaintext-only') t.contentEditable = 'true';
+}
+function placeCaret(el, all){
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  if (!all) range.collapse(false);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(range);
+}
+function blurEditor(){ const a = document.activeElement; if (a && a.closest && (a.closest('.node') || a.closest('.item'))) a.blur(); }
+
+function startEdit(id, opts = {}){
+  if (editing === id) return;
+  commitEdit(); commitItemEdit();
+  if (!doc.nodes[id]) return;
+  select(id);
+  const el = els.get(id); if (!el) return;
+  editing = id;
+  editBefore = opts.before ?? snapshot();
+  el.classList.add('editing');
+  const lab = el.firstChild;
+  makeEditable(lab);
+  if (opts.text != null){ lab.textContent = opts.text; doc.nodes[id].text = opts.text; }
+  lab.focus({ preventScroll: true });
+  placeCaret(lab, opts.selectAll);
+  render();
+}
+function commitEdit(){
+  if (!editing) return;
+  const id = editing; editing = null;
+  const n = doc.nodes[id], el = els.get(id);
+  if (n){
+    const lab = el && el.firstChild;
+    let t = lab ? readText(lab) : n.text;
+    t = t.replace(/^\s+|\s+$/g, '').replace(/\n{3,}/g, '\n\n');
+    n.text = t;
+    if (lab){ lab.removeAttribute('contenteditable'); lab.textContent = t; }
+    reindex();
+    const lonelyRoot = isRoot(id) && doc.roots.length === 1 && !Object.keys(doc.items).length;
+    if (!t && !n.children.length && !lonelyRoot){
+      const fb = removeNodes([id]);
+      sel.delete(id);
+      if (primary === id){ primary = fb; if (fb) sel.add(fb); }
+    }
+  }
+  blurEditor();
+  const changed = editBefore != null && snapshot() !== editBefore;
+  if (changed) record(editBefore);
+  editBefore = null;
+  if (changed) touch();
+  render();
+  if (doc._pending && !ptr) applyPending();
+}
+function createAndEdit(fn){
+  commitEdit(); commitItemEdit();
+  const before = snapshot();
+  const id = fn();
+  reindex(); select(id); render();
+  startEdit(id, { before });
+  ensureVisible(id);
+}
+
+/* ---------- editing notes, text and table cells ---------- */
+function startItemEdit(id, opts = {}){
+  commitEdit(); commitItemEdit();
+  const it = doc.items[id]; if (!it || it.type === 'image') return;
+  select(id);
+  render();
+  const el = itemEls.get(id);
+  let target, r = null, c = null;
+  if (it.type === 'table'){
+    r = clamp(opts.r ?? (tableCursor && tableCursor.id === id ? tableCursor.r : 0), 0, it.rows.length - 1);
+    c = clamp(opts.c ?? (tableCursor && tableCursor.id === id ? tableCursor.c : 0), 0, it.rows[0].length - 1);
+    target = el.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+    tableCursor = { id, r, c };
+  } else target = el.querySelector('.ibody');
+  if (!target) return;
+  iedit = { id, r, c, el: target, before: opts.before ?? snapshot() };
+  el.classList.add('editing');
+  for (const td of el.querySelectorAll('td.cur')) td.classList.remove('cur');
+  makeEditable(target);
+  if (opts.text != null) target.textContent = opts.text;
+  target.focus({ preventScroll: true });
+  placeCaret(target, opts.selectAll);
+  updateToolbar();
+}
+function commitItemEdit(){
+  if (!iedit) return;
+  const { id, r, c, el: t, before } = iedit; iedit = null;
+  const it = doc.items[id];
+  if (it){
+    const v = readText(t).replace(/^\s+|\s+$/g, '');
+    t.removeAttribute('contenteditable');
+    if (it.type === 'table'){ if (it.rows[r]) it.rows[r][c] = v; }
+    else it.text = v;
+    if (it.type === 'text' && !v) delete doc.items[id];
+    const el = itemEls.get(id); if (el) el._sig = null;
+  }
+  blurEditor();
+  if (!doc.items[id]){ sel.delete(id); if (primary === id) primary = null; }
+  if (snapshot() !== before){ record(before); touch(); }
+  render();
+  if (doc._pending && !ptr) applyPending();
+}
+function createItemAndEdit(it){
+  commitEdit(); commitItemEdit();
+  const before = snapshot();
+  const id = addItem(it);
+  select(id); render();
+  startItemEdit(id, { before, r: 0, c: 0 });
+  ensureVisible(id);
+}
+
+/* =========================================================================
+   Commands
+   ========================================================================= */
+function addChild(id){
+  if (!doc.nodes[id]) return;
+  createAndEdit(() => { const n = doc.nodes[id], c = newNode(); n.children.push(c); n.collapsed = false; return c; });
+}
+function addSibling(id, above){
+  if (!doc.nodes[id]) return;
+  const p = parentOf[id];
+  if (p == null) return addChild(id);
+  createAndEdit(() => { const a = doc.nodes[p].children, i = a.indexOf(id), c = newNode(); a.splice(above ? i : i + 1, 0, c); return c; });
+}
+function addParent(id){
+  if (!doc.nodes[id]) return;
+  createAndEdit(() => {
+    const c = newNode(), p = parentOf[id];
+    doc.nodes[c].children = [id];
+    if (p == null) rootEntry(id).id = c;
+    else { const a = doc.nodes[p].children; a[a.indexOf(id)] = c; doc.nodes[c].color = doc.nodes[id].color; doc.nodes[id].color = null; }
+    return c;
+  });
+}
+function addRoot(x, y){ createAndEdit(() => { const c = newNode(); doc.roots.push({ id: c, x, y, layout: 'right' }); return c; }); }
+function addRootAtCenter(){ const c = centerWorld(); addRoot(c.x, c.y); }
+function deleteSelection(){
+  if (!sel.size) return;
+  change(() => {
+    const items = [...sel].filter(isItem), nodes = [...sel].filter(isNode);
+    for (const id of items) delete doc.items[id];
+    const fb = nodes.length ? removeNodes(nodes) : null;
+    sel.clear(); primary = null;
+    if (fb){ sel.add(fb); primary = fb; }
+  });
+  if (primary) ensureVisible(primary);
+}
+function toggleCollapse(id){
+  if (!doc.nodes[id] || !doc.nodes[id].children.length) return;
+  change(() => { doc.nodes[id].collapsed = !doc.nodes[id].collapsed; });
+  select(id);
+}
+function foldAll(id){
+  if (!doc.nodes[id]) return;
+  const desc = [...subtreeIds(id)].filter(x => x !== id && doc.nodes[x].children.length);
+  if (!desc.length) return;
+  const anyOpen = desc.some(x => !doc.nodes[x].collapsed);
+  change(() => { doc.nodes[id].collapsed = false; for (const x of desc) doc.nodes[x].collapsed = anyOpen; });
+}
+function setColor(c){ change(() => { for (const id of sel) if (isNode(id) && !isRoot(id)) doc.nodes[id].color = c || null; }); }
+function setLayout(v){ const r = rootEntry(primary); if (!r) return; change(() => { r.layout = v; }); }
+function duplicate(){
+  const nodeIds = topLevel([...sel].filter(isNode)), itemIds = [...sel].filter(isItem);
+  if (!nodeIds.length && !itemIds.length) return;
+  const fresh = [];
+  change(() => {
+    for (const id of nodeIds){
+      const c = cloneTree(id), p = parentOf[id];
+      if (p == null){ const r = rootEntry(id), h = pos[id] ? pos[id].h : 60; doc.roots.push({ id: c, x: r.x + 40, y: r.y + h + 80, layout: r.layout }); }
+      else { const a = doc.nodes[p].children; a.splice(a.indexOf(id) + 1, 0, c); }
+      fresh.push(c);
+    }
+    for (const id of itemIds){ const copy = JSON.parse(JSON.stringify(doc.items[id])); copy.id = null; copy.x += 24; copy.y += 24; fresh.push(addItem(copy)); }
+  });
+  sel = new Set(fresh); primary = fresh[fresh.length - 1]; refreshSel(); ensureVisible(primary);
+}
+function reorder(id, delta){
+  const p = parentOf[id]; if (p == null) return;
+  const a = doc.nodes[p].children, i = a.indexOf(id), j = i + delta;
+  if (j < 0 || j >= a.length) return;
+  change(() => { a.splice(i, 1); a.splice(j, 0, id); });
+  ensureVisible(id);
+}
+function indent(id){
+  const p = parentOf[id]; if (p == null) return false;
+  const a = doc.nodes[p].children, i = a.indexOf(id);
+  if (i <= 0) return false;
+  moveNode(id, a[i - 1], null);
+  return true;
+}
+function outdent(id){
+  const p = parentOf[id]; if (p == null) return false;
+  const g = parentOf[p]; if (g == null) return false;
+  moveNode(id, g, doc.nodes[g].children.indexOf(p) + 1);
+  return true;
+}
+function nudge(dx, dy){
+  change(() => {
+    for (const id of sel){
+      if (isItem(id)){ doc.items[id].x += dx; doc.items[id].y += dy; }
+      else if (isNode(id) && isRoot(id)){ const r = rootEntry(id); r.x += dx; r.y += dy; }
+    }
+  });
+}
+function layer(front){
+  change(() => {
+    const ids = [...sel].filter(isItem); if (!ids.length) return;
+    const zs = Object.values(doc.items).map(i => i.z || 0);
+    let z = front ? Math.max(...zs) + 1 : Math.min(...zs) - ids.length;
+    for (const id of ids) doc.items[id].z = z++;
+  });
+}
+function pasteOutline(text){
+  const trees = parseOutline(text);
+  if (!trees.length) return;
+  pasteTrees(trees);
+  toast(`Pasted ${trees.length === 1 ? 'branch' : trees.length + ' branches'}`);
+}
+function pasteTrees(trees, at){
+  let first = null;
+  change(() => {
+    if (isNode(primary) && !at){
+      const n = doc.nodes[primary];
+      for (const t of trees){ const id = importTree(t); n.children.push(id); first = first || id; }
+      n.collapsed = false;
+    } else {
+      const c = at || pastePoint();
+      trees.forEach((t, i) => { const id = importTree(t); doc.roots.push({ id, x: c.x, y: c.y + i * 160, layout: 'right' }); first = first || id; });
+    }
+  });
+  if (first){ select(first); ensureVisible(first); }
+}
+function pasteInternal(){
+  const at = pastePoint();
+  const fresh = [];
+  if (clip.items && clip.items.length){
+    let x0 = Infinity, y0 = Infinity;
+    for (const it of clip.items){ x0 = Math.min(x0, it.x); y0 = Math.min(y0, it.y); }
+    change(() => { for (const it of clip.items){ const copy = JSON.parse(JSON.stringify(it)); copy.id = null; copy.x = Math.round(at.x + (it.x - x0)); copy.y = Math.round(at.y + (it.y - y0)); fresh.push(addItem(copy)); } });
+  }
+  if (clip.trees && clip.trees.length){
+    if (!fresh.length) return pasteTrees(clip.trees);
+    pasteTrees(clip.trees, { x: at.x, y: at.y - 120 });
+  }
+  if (fresh.length){ sel = new Set(fresh); primary = fresh[fresh.length - 1]; refreshSel(); }
+}
+
+/* ---------- tables ---------- */
+function addTable(rows, at){
+  const fresh = [];
+  change(() => { fresh.push(addItem({ type: 'table', x: Math.round(at.x), y: Math.round(at.y), rows, header: true })); });
+  const id = fresh[0], b = itemBox(id), it = doc.items[id];
+  it.x = Math.round(at.x - b.w / 2); it.y = Math.round(at.y - b.h / 2);
+  select(id); tableCursor = { id, r: 0, c: 0 }; render(); ensureVisible(id);
+  toast(`Added a table with ${rows.length} row${rows.length === 1 ? '' : 's'}`);
+}
+function tableOp(op){
+  const id = primary, it = doc.items[id]; if (!it || it.type !== 'table') return;
+  const cur = tableCursor && tableCursor.id === id ? tableCursor : { r: it.rows.length - 1, c: it.rows[0].length - 1 };
+  change(() => {
+    const cols = it.rows[0].length;
+    if (op === 'row+') it.rows.splice(cur.r + 1, 0, Array(cols).fill(''));
+    if (op === 'col+') it.rows.forEach(r => r.splice(cur.c + 1, 0, ''));
+    if (op === 'row-' && it.rows.length > 1) it.rows.splice(cur.r, 1);
+    if (op === 'col-' && cols > 1) it.rows.forEach(r => r.splice(cur.c, 1));
+    if (op === 'head') it.header = !it.header;
+  });
+  let nr = cur.r, nc = cur.c;
+  if (op === 'row+') nr++;
+  if (op === 'col+') nc++;
+  tableCursor = { id, r: Math.min(nr, it.rows.length - 1), c: Math.min(nc, it.rows[0].length - 1) };
+  render();
+}
+
+/* ---------- images ---------- */
+async function loadBitmap(file){
+  try { return await createImageBitmap(file); }
+  catch(e){
+    return await new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(file); });
+  }
+}
+function encodeImage(bmp, maxDim, budget){
+  const W = bmp.width, H = bmp.height;
+  for (let dim = maxDim; dim >= 240; dim = Math.round(dim * 0.75)){
+    const s = Math.min(1, dim / Math.max(W, H));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(W * s)); c.height = Math.max(1, Math.round(H * s));
+    const g = c.getContext('2d');
+    g.drawImage(bmp, 0, 0, c.width, c.height);
+    for (const q of [0.86, 0.72, 0.58]){
+      let url = c.toDataURL('image/webp', q);
+      if (!url.startsWith('data:image/webp')){
+        g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+        url = c.toDataURL('image/jpeg', q);
+      }
+      if (url.length <= budget) return url;
+    }
+  }
+  return null;
+}
+async function addImageFile(file, at){
+  if (!doc) return;
+  if (!/^image\//.test(file.type)){ toast('Only image files can be added to the canvas'); return; }
+  const target = doc;
+  toast('Adding image…', 15000);
+  let bmp;
+  try { bmp = await loadBitmap(file); } catch(e){ toast('That image could not be opened. Try a PNG or JPEG.'); return; }
+  const scale = Math.min(1, 520 / Math.max(bmp.width, bmp.height));
+  const w = Math.max(40, Math.round(bmp.width * scale)), h = Math.max(40, Math.round(bmp.height * scale));
+  const url = encodeImage(bmp, 1600, 600000);
+  if (!url){ toast('That image is too large to store. Try a smaller one.'); return; }
+  const src = { data: url };
+  if (doc !== target) return;
+  const fresh = [];
+  change(() => { fresh.push(addItem({ type: 'image', x: Math.round(at.x - w / 2), y: Math.round(at.y - h / 2), w, h, src })); });
+  select(fresh[0]); ensureVisible(fresh[0]);
+  toast('Image added');
+}
+function addImageFiles(files, at){ [...files].forEach((f, i) => addImageFile(f, { x: at.x + i * 30, y: at.y + i * 30 })); }
+
+/* ---------- tools ---------- */
+function setTool(t){
+  if (t === 'image'){ $('#imageFile').click(); t = 'select'; }
+  tool = t;
+  for (const b of document.querySelectorAll('#rail [data-tool]')) b.classList.toggle('on', b.dataset.tool === tool);
+  stage.dataset.tool = tool;
+}
+function placeTool(t, w){
+  setTool('select');
+  if (t === 'mindmap') return addRoot(w.x, w.y);
+  if (t === 'note') return createItemAndEdit({ type: 'note', x: Math.round(w.x - 110), y: Math.round(w.y - 55), w: 220, text: '', color: NOTE_COLORS[0] });
+  if (t === 'text') return createItemAndEdit({ type: 'text', x: Math.round(w.x - 10), y: Math.round(w.y - 14), text: '' });
+  if (t === 'table') return createItemAndEdit({ type: 'table', x: Math.round(w.x - 120), y: Math.round(w.y - 50), rows: [['', '', ''], ['', '', ''], ['', '', '']], header: true });
+}
+$('#rail').addEventListener('click', e => { const b = e.target.closest('[data-tool]'); if (b) setTool(b.dataset.tool); });
+$('#imageFile').addEventListener('change', e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) addImageFiles(f, centerWorld()); });
+
+/* ---------- arrow-key navigation ---------- */
+function nav(key){
+  if (!isNode(primary) || !pos[primary]){ const f = doc.roots[0]; if (f){ select(f.id); ensureVisible(f.id); } return; }
+  const id = primary, p = pos[id];
+  const nearestChild = side => {
+    const ks = visibleKids(id).filter(k => pos[k] && (side == null || pos[k].dir === side));
+    let best = null, bd = Infinity; const cy = p.y + p.h / 2;
+    for (const k of ks){ const d = Math.abs(pos[k].y + pos[k].h / 2 - cy); if (d < bd){ bd = d; best = k; } }
+    return best;
+  };
+  let t = null;
+  if (key === 'ArrowRight') t = p.dir > 0 ? nearestChild(1) : p.dir < 0 ? parentOf[id] : nearestChild(1);
+  else if (key === 'ArrowLeft') t = p.dir < 0 ? nearestChild(-1) : p.dir > 0 ? parentOf[id] : nearestChild(-1);
+  else t = vertical(id, key === 'ArrowUp' ? -1 : 1);
+  if (t != null){ select(t); ensureVisible(t); }
+}
+function vertical(id, s){
+  const p = pos[id], cy = p.y + p.h / 2;
+  let best = null, bd = Infinity;
+  for (const k in pos){
+    if (k === id) continue;
+    const q = pos[k];
+    if (rootOf[k] !== rootOf[id] || depthOf[k] !== depthOf[id] || q.dir !== p.dir) continue;
+    const dy = (q.y + q.h / 2 - cy) * s;
+    if (dy > 0 && dy < bd){ bd = dy; best = k; }
+  }
+  if (best) return best;
+  const cx = p.x + p.w / 2;
+  for (const k in pos){
+    if (k === id) continue;
+    const q = pos[k], dy = (q.y + q.h / 2 - cy) * s;
+    if (dy <= 0) continue;
+    const score = dy + Math.abs(q.x + q.w / 2 - cx) * 2;
+    if (score < bd){ bd = score; best = k; }
+  }
+  return best;
+}
+
+/* =========================================================================
+   Keyboard
+   ========================================================================= */
+const isField = t => t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || (t.isContentEditable && !(t.closest && (t.closest('.node') || t.closest('.item')))));
+document.addEventListener('keydown', e => {
+  if (e.isComposing || e.keyCode === 229) return;
+  if (!$('#dialog').hidden){ if (e.key === 'Escape') closeDialog(); return; }
+  if (!$('#menu').hidden && e.key === 'Escape'){ closeMenu(); return; }
+  if (editing){ onEditKey(e); return; }
+  if (iedit){ onItemEditKey(e); return; }
+  if (isField(e.target)){ if (e.key === 'Escape' || (e.key === 'Enter' && e.target.id === 'title')) e.target.blur(); return; }
+  const mod = e.metaKey || e.ctrlKey, k = e.key;
+  if (mod && !e.altKey && k.toLowerCase() === 'e'){ e.preventDefault(); toggleSidebar(); return; }
+  if (!doc) return;
+
+  if (mod && !e.altKey){
+    const kl = k.toLowerCase();
+    if (kl === 'z'){ e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if (kl === 'y'){ e.preventDefault(); redo(); return; }
+    if (k === '/' || k === '?'){ e.preventDefault(); if (isNode(primary)) (e.shiftKey ? foldAll : toggleCollapse)(primary); return; }
+    if (k === 'Enter'){ e.preventDefault(); if (isNode(primary)) addSibling(primary, true); return; }
+    if (kl === 'd'){ e.preventDefault(); duplicate(); return; }
+    if (kl === 'a'){ e.preventDefault(); selectAll(); return; }
+    if (k === '=' || k === '+'){ e.preventDefault(); zoomBy(1.25); return; }
+    if (k === '-' || k === '_'){ e.preventDefault(); zoomBy(1 / 1.25); return; }
+    if (k === '0'){ e.preventDefault(); zoomTo(1); return; }
+    return; // ⌘C / ⌘X / ⌘V are handled by the clipboard events
+  }
+  if (k === 'Escape'){
+    if (!$('#help').hidden) toggleHelp(false);
+    else if (tool !== 'select') setTool('select');
+    else select(null);
+    return;
+  }
+  if (k === ' ' && !e.altKey){ e.preventDefault(); if (!spaceDown){ spaceDown = true; stage.classList.add('space'); } return; }
+  if (e.shiftKey && !e.altKey && /^Digit[012]$/.test(e.code)){ e.preventDefault(); zoomKey(e.code.slice(-1)); return; }
+
+  if (!primary){
+    const tk = { v: 'select', h: 'hand', n: 'note', t: 'text', e: 'table', i: 'image' }[k.toLowerCase()];
+    if (tk && !e.altKey && !e.shiftKey){ e.preventDefault(); setTool(tk); return; }
+    if (k === 'm' || k === 'M'){ e.preventDefault(); addRootAtCenter(); return; }
+    if (k === '=' || k === '+'){ zoomBy(1.25); return; }
+    if (k === '-'){ zoomBy(1 / 1.25); return; }
+    if (k === '0' || k === '1' || k === '2'){ zoomKey(k); return; }
+    if (k === '?'){ toggleHelp(); return; }
+    if (k.startsWith('Arrow') || k === 'Tab' || k === 'Enter'){ e.preventDefault(); nav(k); return; }
+    return;
+  }
+  if (isItem(primary)){ onItemKey(e); return; }
+  if (k === 'Tab'){
+    e.preventDefault();
+    if (e.shiftKey){ const p = parentOf[primary]; if (p != null){ select(p); ensureVisible(p); } }
+    else addChild(primary);
+    return;
+  }
+  if (k === 'Enter'){
+    e.preventDefault();
+    if (e.altKey) addParent(primary);
+    else if (e.shiftKey) startEdit(primary);
+    else addSibling(primary, false);
+    return;
+  }
+  if (k === 'F2'){ e.preventDefault(); startEdit(primary); return; }
+  if (k === 'Delete' || k === 'Backspace'){ e.preventDefault(); deleteSelection(); return; }
+  if (k.startsWith('Arrow')){
+    e.preventDefault();
+    if (e.altKey){
+      const id = primary, dir = pos[id] ? pos[id].dir : 1;
+      if (k === 'ArrowUp') reorder(id, -1);
+      else if (k === 'ArrowDown') reorder(id, 1);
+      else {
+        const deeper = (k === 'ArrowRight') === (dir >= 0);
+        change(() => { deeper ? indent(id) : outdent(id); });
+        select(id); ensureVisible(id);
+      }
+    } else nav(k);
+    return;
+  }
+  if (k.length === 1 && !e.altKey){ e.preventDefault(); startEdit(primary, { text: k }); return; }
+});
+function onItemKey(e){
+  const it = doc.items[primary], k = e.key;
+  if (k === 'Delete' || k === 'Backspace'){ e.preventDefault(); deleteSelection(); return; }
+  if (k.startsWith('Arrow')){
+    e.preventDefault();
+    if (it.type === 'table' && !e.altKey && !e.shiftKey && sel.size === 1 && tableCursor && tableCursor.id === it.id){
+      const r = tableCursor.r + (k === 'ArrowDown') - (k === 'ArrowUp'), c = tableCursor.c + (k === 'ArrowRight') - (k === 'ArrowLeft');
+      tableCursor = { id: it.id, r: clamp(r, 0, it.rows.length - 1), c: clamp(c, 0, it.rows[0].length - 1) };
+      render(); return;
+    }
+    const s = e.shiftKey ? 10 : 1;
+    nudge(k === 'ArrowLeft' ? -s : k === 'ArrowRight' ? s : 0, k === 'ArrowUp' ? -s : k === 'ArrowDown' ? s : 0);
+    return;
+  }
+  if (k === 'Enter' || k === 'F2'){ e.preventDefault(); startItemEdit(it.id); return; }
+  if (k.length === 1 && !e.altKey && it.type !== 'image'){ e.preventDefault(); startItemEdit(it.id, { text: it.type === 'note' ? (it.text || '') + k : k }); }
+}
+document.addEventListener('keyup', e => { if (e.key === ' '){ spaceDown = false; stage.classList.remove('space'); } });
+window.addEventListener('blur', () => { spaceDown = false; stage.classList.remove('space'); });
+
+function onEditKey(e){
+  const mod = e.metaKey || e.ctrlKey, k = e.key, id = editing;
+  const lab = els.get(id).firstChild;
+  if (k === 'Enter'){
+    if (e.shiftKey && !mod && !e.altKey){
+      if (lab.contentEditable !== 'plaintext-only'){ e.preventDefault(); document.execCommand('insertLineBreak'); }
+      return;
+    }
+    e.preventDefault();
+    const empty = !readText(lab).trim();
+    commitEdit();
+    if (!doc.nodes[id]) return;
+    if (e.altKey) addParent(id);
+    else if (mod) addSibling(id, true);
+    else if (!empty) addSibling(id, false);
+    return;
+  }
+  if (k === 'Tab'){
+    e.preventDefault();
+    const empty = !readText(lab).trim();
+    if (empty && !isRoot(id)){
+      if (e.shiftKey ? outdent(id) : indent(id)){ render(); lab.focus({ preventScroll: true }); ensureVisible(id); }
+      return;
+    }
+    commitEdit();
+    if (!doc.nodes[id]) return;
+    if (e.shiftKey){ const p = parentOf[id]; if (p != null) select(p); }
+    else addChild(id);
+    return;
+  }
+  if (k === 'Escape'){ e.preventDefault(); commitEdit(); return; }
+  if (mod && (k === '/' || k === '?')){ e.preventDefault(); commitEdit(); if (doc.nodes[id]) toggleCollapse(id); return; }
+  if (mod && !e.altKey && /^[biu]$/i.test(k)) e.preventDefault();
+}
+function onItemEditKey(e){
+  const k = e.key, it = doc.items[iedit.id];
+  if (k === 'Escape'){ e.preventDefault(); commitItemEdit(); return; }
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && /^[biu]$/i.test(k)){ e.preventDefault(); return; }
+  if (!it) return;
+  if (it.type === 'table' && (k === 'Tab' || (k === 'Enter' && !e.shiftKey))){
+    e.preventDefault();
+    const { id, r, c } = iedit, cols = it.rows[0].length;
+    let nr = r, nc = c;
+    if (k === 'Tab'){ if (e.shiftKey){ nc--; if (nc < 0){ nc = cols - 1; nr--; } } else { nc++; if (nc >= cols){ nc = 0; nr++; } } }
+    else nr++;
+    commitItemEdit();
+    if (nr < 0) return;
+    if (nr >= it.rows.length){
+      if (k === 'Enter'){ tableCursor = { id, r, c }; render(); return; }
+      change(() => { it.rows.push(Array(cols).fill('')); });
+    }
+    startItemEdit(id, { r: nr, c: nc });
+    return;
+  }
+  if (it.type === 'text' && k === 'Enter' && !e.shiftKey){ e.preventDefault(); commitItemEdit(); }
+}
+
+nodesLayer.addEventListener('input', e => {
+  if (!editing) return;
+  const lab = els.get(editing)?.firstChild;
+  if (e.target !== lab) return;
+  doc.nodes[editing].text = readText(lab);
+  render();
+});
+itemsLayer.addEventListener('input', () => { if (iedit){ const el = itemEls.get(iedit.id); if (el) itemRect[iedit.id] = { w: el.offsetWidth, h: el.offsetHeight }; } });
+for (const layerEl of [nodesLayer, itemsLayer]){
+  layerEl.addEventListener('paste', e => {
+    if (!editing && !iedit) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const t = (e.clipboardData.getData('text/plain') || '').replace(/\r\n?/g, '\n');
+    document.execCommand('insertText', false, t);
+  });
+}
+nodesLayer.addEventListener('focusout', e => {
+  if (!editing) return;
+  const lab = els.get(editing)?.firstChild;
+  if (e.target !== lab) return;
+  setTimeout(() => { if (editing && document.hasFocus() && document.activeElement !== lab) commitEdit(); }, 0);
+});
+itemsLayer.addEventListener('focusout', e => {
+  if (!iedit || e.target !== iedit.el) return;
+  const t = iedit.el;
+  setTimeout(() => { if (iedit && iedit.el === t && document.hasFocus() && document.activeElement !== t) commitItemEdit(); }, 0);
+});
+
+/* ---------- clipboard ---------- */
+function writeClip(e){
+  const nodeIds = topLevel([...sel].filter(isNode)), itemIds = [...sel].filter(isItem);
+  const parts = [], html = [];
+  if (nodeIds.length) parts.push(outlineOf(nodeIds));
+  for (const id of itemIds){
+    const it = doc.items[id];
+    if (it.type === 'table'){ parts.push(tableTSV(it)); html.push(tableHTML(it)); }
+    else if (it.type === 'image') parts.push('[image]');
+    else if (it.text) parts.push(it.text);
+  }
+  const text = parts.join('\n\n') || '[board objects]';
+  clip = { text, trees: nodeIds.map(exportTree), items: itemIds.map(id => JSON.parse(JSON.stringify(doc.items[id]))) };
+  e.clipboardData.setData('text/plain', text);
+  if (html.length === 1 && !nodeIds.length && itemIds.length === 1) e.clipboardData.setData('text/html', html[0]);
+  e.preventDefault();
+}
+document.addEventListener('copy', e => {
+  if (editing || iedit || isField(e.target) || !doc || !sel.size) return;
+  writeClip(e);
+  toast('Copied');
+});
+document.addEventListener('cut', e => {
+  if (editing || iedit || isField(e.target) || !doc || !sel.size) return;
+  writeClip(e);
+  deleteSelection();
+});
+document.addEventListener('paste', e => {
+  if (editing || iedit || isField(e.target) || !doc) return;
+  const dt = e.clipboardData; if (!dt) return;
+  const files = [...(dt.files || [])].filter(f => /^image\//.test(f.type));
+  const text = dt.getData('text/plain') || '', html = dt.getData('text/html') || '';
+  if (clip && text && text === clip.text){ e.preventDefault(); pasteInternal(); return; }
+  if (files.length){ e.preventDefault(); addImageFiles(files, pastePoint()); return; }
+  const rows = (html && parseHtmlTable(html)) || parseTSV(text);
+  if (rows){ e.preventDefault(); addTable(rows, pastePoint()); return; }
+  if (text.trim()){ e.preventDefault(); pasteOutline(text); }
+});
+
+/* ---------- drop files onto the canvas ---------- */
+stage.addEventListener('dragover', e => { if ([...(e.dataTransfer?.types || [])].includes('Files')){ e.preventDefault(); stage.classList.add('filedrop'); } });
+stage.addEventListener('dragleave', e => { if (e.target === stage) stage.classList.remove('filedrop'); });
+stage.addEventListener('drop', e => {
+  stage.classList.remove('filedrop');
+  const files = [...(e.dataTransfer?.files || [])];
+  if (!files.length || !doc) return;
+  e.preventDefault();
+  const imgs = files.filter(f => /^image\//.test(f.type));
+  if (imgs.length) addImageFiles(imgs, toWorld(e.clientX, e.clientY));
+  else importFile(files[0]);
+});
+
+/* =========================================================================
+   Pointer: select, box-select, pan, drag & drop
+   ========================================================================= */
+document.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); });
+stage.addEventListener('pointermove', e => { lastPointer = { x: e.clientX, y: e.clientY, t: Date.now() }; }, { passive: true });
+
+stage.addEventListener('pointerdown', e => {
+  if (!doc || e.button === 2) return;
+  const t = e.target;
+  if (t.closest('.ui') || t.closest('.tog,.badge,.plus,.sib')) return;
+  if (isNarrow() && sidebarOpen) toggleSidebar(false);
+  closeMenu();
+  if (PLACE_TOOLS.has(tool) && e.button === 0){ e.preventDefault(); placeTool(tool, toWorld(e.clientX, e.clientY)); return; }
+  const panMode = tool === 'hand' || spaceDown || e.button === 1;
+  const nodeEl = !panMode && t.closest('.node');
+  const itemEl = !panMode && !nodeEl && t.closest('.item');
+  const multi = e.shiftKey || e.metaKey || e.ctrlKey;
+
+  if (nodeEl && e.button === 0){
+    const id = nodeEl.dataset.id;
+    if (editing === id) return;
+    if (editing) commitEdit();
+    if (iedit) commitItemEdit();
+    if (!doc.nodes[id]) return;
+    if (multi){
+      if (sel.has(id)){ sel.delete(id); if (primary === id) primary = [...sel].pop() || null; }
+      else { sel.add(id); primary = id; }
+      refreshSel();
+    } else if (!sel.has(id)) select(id);
+    else { primary = id; updateToolbar(); }
+    const group = isRoot(id) && sel.has(id) && sel.size > 1 && [...sel].some(x => isItem(x) || (x !== id && isNode(x) && isRoot(x)));
+    ptr = { mode: group ? 'ipress' : 'press', id, sx: e.clientX, sy: e.clientY, multi };
+    stage.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    return;
+  }
+  if (itemEl && e.button === 0){
+    const id = itemEl.dataset.id, td = t.closest('td');
+    if (iedit && iedit.id === id){
+      if (iedit.el.contains(t)) return;
+      if (td){ e.preventDefault(); const r = +td.dataset.r, c = +td.dataset.c; commitItemEdit(); startItemEdit(id, { r, c }); return; }
+    }
+    if (editing) commitEdit();
+    if (iedit) commitItemEdit();
+    if (!doc.items[id]) return;
+    if (td) tableCursor = { id, r: +td.dataset.r, c: +td.dataset.c };
+    if (t.closest('.rh')){
+      select(id);
+      const b = itemBox(id);
+      ptr = { mode: 'resize', id, sx: e.clientX, sy: e.clientY, w0: b.w, h0: b.h, before: snapshot() };
+      stage.setPointerCapture(e.pointerId); e.preventDefault(); return;
+    }
+    if (multi){
+      if (sel.has(id)){ sel.delete(id); if (primary === id) primary = [...sel].pop() || null; }
+      else { sel.add(id); primary = id; }
+      refreshSel();
+    } else if (!sel.has(id)) select(id);
+    else { primary = id; updateToolbar(); }
+    render();
+    ptr = { mode: 'ipress', id, sx: e.clientX, sy: e.clientY, multi };
+    stage.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    return;
+  }
+  if (editing) commitEdit();
+  if (iedit) commitItemEdit();
+  if (panMode || e.pointerType === 'touch'){
+    ptr = { mode: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, moved: false, deselect: !panMode };
+    stage.setPointerCapture(e.pointerId);
+    stage.classList.add('panning');
+    return;
+  }
+  ptr = { mode: 'marquee', sx: e.clientX, sy: e.clientY, base: multi ? new Set(sel) : new Set(), moved: false, multi };
+  stage.setPointerCapture(e.pointerId);
+});
+
+stage.addEventListener('pointermove', e => {
+  if (!ptr) return;
+  const dx = e.clientX - ptr.sx, dy = e.clientY - ptr.sy;
+  if (ptr.mode === 'pan'){
+    if (Math.abs(dx) + Math.abs(dy) > 3){ ptr.moved = true; stage.classList.add('moving'); }
+    if (ptr.moved){ cancelAnimationFrame(anim); view.x = ptr.vx + dx; view.y = ptr.vy + dy; applyView(); }
+    return;
+  }
+  if (ptr.mode === 'marquee'){
+    if (!ptr.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+    ptr.moved = true;
+    const r = stageRect();
+    const x0 = Math.min(ptr.sx, e.clientX), y0 = Math.min(ptr.sy, e.clientY), x1 = Math.max(ptr.sx, e.clientX), y1 = Math.max(ptr.sy, e.clientY);
+    marqueeEl.hidden = false;
+    Object.assign(marqueeEl.style, { left: (x0 - r.left) + 'px', top: (y0 - r.top) + 'px', width: (x1 - x0) + 'px', height: (y1 - y0) + 'px' });
+    const a = toWorld(x0, y0), b = toWorld(x1, y1), hits = [];
+    const hit = q => q.x < b.x && q.x + q.w > a.x && q.y < b.y && q.y + q.h > a.y;
+    for (const id in doc.items) if (hit(itemBox(id))) hits.push(id);
+    for (const id in pos) if (hit(pos[id])) hits.push(id);
+    sel = new Set([...ptr.base, ...hits]);
+    primary = hits[hits.length - 1] || [...sel].pop() || null;
+    refreshSel();
+    return;
+  }
+  if (ptr.mode === 'resize'){
+    const it = doc.items[ptr.id]; if (!it) return;
+    const dw = dx / view.z;
+    if (it.type === 'image'){ it.w = Math.max(30, Math.round(ptr.w0 + dw)); it.h = Math.round(it.w * ptr.h0 / ptr.w0); }
+    else it.w = Math.max(120, Math.round(ptr.w0 + dw));
+    render();
+    return;
+  }
+  if (ptr.mode === 'press' || ptr.mode === 'ipress'){
+    if (Math.hypot(dx, dy) < 5) return;
+    if (ptr.mode === 'press') beginDrag(); else beginGroupMove();
+  }
+  if (ptr.mode === 'drag' || ptr.mode === 'imove'){
+    ptr.last = { clientX: e.clientX, clientY: e.clientY };
+    if (ptr.mode === 'drag') dragMove(ptr.last); else moveGroup(ptr.last);
+  }
+});
+
+function beginGroupMove(){
+  ptr.mode = 'imove';
+  ptr.before = snapshot();
+  if (!sel.has(ptr.id)) select(ptr.id);
+  ptr.group = [...sel].filter(isItem).map(id => ({ it: doc.items[id], x: doc.items[id].x, y: doc.items[id].y }));
+  ptr.rootsMoving = [...sel].filter(id => isNode(id) && isRoot(id)).map(id => { const r = rootEntry(id); return { r, x: r.x, y: r.y }; });
+  toolbar.hidden = true; itoolbar.hidden = true;
+  ptr.raf = requestAnimationFrame(autoPan);
+}
+function moveGroup(e){
+  const dx = (e.clientX - ptr.sx) / view.z, dy = (e.clientY - ptr.sy) / view.z;
+  for (const g of ptr.group){ g.it.x = Math.round(g.x + dx); g.it.y = Math.round(g.y + dy); }
+  for (const g of ptr.rootsMoving){ g.r.x = g.x + dx; g.r.y = g.y + dy; }
+  render();
+}
+function beginDrag(){
+  const id = ptr.id;
+  ptr.mode = 'drag';
+  ptr.before = snapshot();
+  ptr.root = isRoot(id);
+  select(id);
+  dragSet = ptr.root ? null : subtreeIds(id);
+  ptr.raf = requestAnimationFrame(autoPan);
+  if (ptr.root){ const r = rootEntry(id); ptr.rx = ptr.ox = r.x; ptr.ry = ptr.oy = r.y; }
+  else {
+    const g = document.createElement('div');
+    g.className = 'ghost';
+    g.textContent = doc.nodes[id].text || '…';
+    const kids = countDesc(id); if (kids) g.textContent += `  +${kids}`;
+    document.body.appendChild(g);
+    ptr.ghost = g;
+  }
+  toolbar.hidden = true;
+  render();
+}
+/** While dragging near the edge of the canvas, scroll it so you can reach off-screen spots. */
+function autoPan(){
+  if (!ptr || (ptr.mode !== 'drag' && ptr.mode !== 'imove')) return;
+  const e = ptr.last;
+  if (e){
+    const r = stageRect(), m = 40, sp = 12;
+    let dx = 0, dy = 0;
+    if (e.clientX < r.left + m) dx = sp; else if (e.clientX > r.right - m) dx = -sp;
+    if (e.clientY < r.top + m) dy = sp; else if (e.clientY > r.bottom - m) dy = -sp;
+    if (dx || dy){
+      view.x += dx; view.y += dy;
+      if (ptr.mode === 'imove'){ ptr.sx += dx; ptr.sy += dy; applyView(); moveGroup(e); }
+      else { if (ptr.root){ ptr.rx -= dx / view.z; ptr.ry -= dy / view.z; } applyView(); dragMove(e); }
+    }
+  }
+  ptr.raf = requestAnimationFrame(autoPan);
+}
+function dragMove(e){
+  const w = toWorld(e.clientX, e.clientY);
+  clearDropUI();
+  if (ptr.root){
+    const r = rootEntry(ptr.id);
+    r.x = ptr.rx + (e.clientX - ptr.sx) / view.z;
+    r.y = ptr.ry + (e.clientY - ptr.sy) / view.z;
+    render();
+    ptr.target = findDrop(w.x, w.y, ptr.id, true);
+  } else {
+    ptr.ghost.style.left = (e.clientX + 12) + 'px';
+    ptr.ghost.style.top = (e.clientY + 10) + 'px';
+    ptr.target = findDrop(w.x, w.y, ptr.id, false);
+  }
+  showDropUI(ptr.target);
+}
+function clearDropUI(){ for (const el of nodesLayer.querySelectorAll('.drop')) el.classList.remove('drop'); dropbar.hidden = true; }
+function showDropUI(t){
+  if (!t) return;
+  if (t.mode === 'child'){ els.get(t.parent)?.classList.add('drop'); return; }
+  dropbar.hidden = false;
+  dropbar.style.left = t.bx + 'px';
+  dropbar.style.top = (t.by - 2) + 'px';
+}
+/** Where would the dragged node land? */
+function findDrop(wx, wy, dragId, onlyChild){
+  const excl = subtreeIds(dragId);
+  for (const k in pos){
+    if (excl.has(k)) continue;
+    const q = pos[k];
+    if (wx < q.x - 4 || wx > q.x + q.w + 4 || wy < q.y - 5 || wy > q.y + q.h + 5) continue;
+    const rel = (wy - q.y) / q.h;
+    if (!onlyChild && !isRoot(k) && (rel < 0.3 || rel > 0.7)){
+      const P = parentOf[k], arr = doc.nodes[P].children.filter(c => c !== dragId), after = rel > 0.7;
+      const bx = q.dir < 0 ? q.x + q.w - 90 : q.x;
+      return { parent: P, index: arr.indexOf(k) + (after ? 1 : 0), mode: 'insert', bx, by: after ? q.y + q.h + 1 : q.y - 1 };
+    }
+    return { parent: k, index: null, mode: 'child' };
+  }
+  if (onlyChild) return null;
+  let best = null, bestDepth = -1;
+  for (const k in pos){
+    if (excl.has(k)) continue;
+    const n = doc.nodes[k]; if (n.collapsed) continue;
+    for (const side of [1, -1]){
+      const ks = n.children.filter(c => !excl.has(c) && pos[c] && pos[c].dir === side);
+      if (!ks.length) continue;
+      const q = pos[k];
+      let minY = Infinity, maxY = -Infinity, farX = side > 0 ? -Infinity : Infinity;
+      for (const c of ks){ const p = pos[c]; minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y + p.h); farX = side > 0 ? Math.max(farX, p.x + p.w) : Math.min(farX, p.x); }
+      const nearX = side > 0 ? q.x + q.w : q.x;
+      const x0 = Math.min(nearX, farX) - (side < 0 ? 40 : 0), x1 = Math.max(nearX, farX) + (side > 0 ? 40 : 0);
+      if (wx < x0 || wx > x1 || wy < minY - 26 || wy > maxY + 26) continue;
+      if (depthOf[k] > bestDepth){ bestDepth = depthOf[k]; best = { k, ks, side }; }
+    }
+  }
+  if (best){
+    const { k, ks, side } = best;
+    const full = doc.nodes[k].children.filter(c => c !== dragId);
+    let i = 0; while (i < ks.length && pos[ks[i]].y + pos[ks[i]].h / 2 < wy) i++;
+    const index = i < ks.length ? full.indexOf(ks[i]) : full.indexOf(ks[ks.length - 1]) + 1;
+    let by;
+    if (i === 0) by = pos[ks[0]].y - 4;
+    else if (i === ks.length) by = pos[ks[i - 1]].y + pos[ks[i - 1]].h + 4;
+    else by = (pos[ks[i - 1]].y + pos[ks[i - 1]].h + pos[ks[i]].y) / 2;
+    const ref = pos[ks[Math.min(i, ks.length - 1)]];
+    const bx = side < 0 ? ref.x + ref.w - 90 : ref.x;
+    return { parent: k, index, mode: 'insert', bx, by };
+  }
+  for (const k in pos){
+    if (excl.has(k)) continue;
+    const q = pos[k], r = rootEntry(rootOf[k]);
+    const side = q.dir || (r && r.layout === 'left' ? -1 : 1);
+    if (visibleKids(k).some(c => pos[c] && pos[c].dir === side && !excl.has(c))) continue;
+    const inX = side > 0 ? (wx > q.x + q.w && wx < q.x + q.w + HGAP + 100) : (wx < q.x && wx > q.x - HGAP - 100);
+    if (inX && wy > q.y - 8 && wy < q.y + q.h + 8) return { parent: k, index: null, mode: 'child' };
+  }
+  return null;
+}
+
+stage.addEventListener('pointerup', endPointer);
+stage.addEventListener('pointercancel', endPointer);
+function endPointer(e){
+  if (!ptr) return;
+  const p = ptr; ptr = null;
+  cancelAnimationFrame(p.raf);
+  stage.classList.remove('panning', 'moving');
+  if (p.mode === 'pan'){ if (!p.moved && p.deselect && e.type === 'pointerup') select(null); }
+  else if (p.mode === 'marquee'){
+    marqueeEl.hidden = true;
+    if (!p.moved && !p.multi && e.type === 'pointerup') select(null);
+    else updateToolbar();
+  }
+  else if (p.mode === 'press' || p.mode === 'ipress'){ if (!p.multi && sel.size > 1) select(p.id); }
+  else if (p.mode === 'resize' || p.mode === 'imove'){
+    if (snapshot() !== p.before){ record(p.before); touch(); }
+    render();
+  }
+  else if (p.mode === 'drag'){
+    clearDropUI();
+    if (p.ghost) p.ghost.remove();
+    dragSet = null;
+    const t = e.type === 'pointerup' ? p.target : null;
+    if (t){
+      if (p.root){ const r = rootEntry(p.id); if (r){ r.x = p.ox; r.y = p.oy; } }
+      moveNode(p.id, t.parent, t.index);
+    } else if (p.root && e.type !== 'pointerup'){
+      const r = rootEntry(p.id); r.x = p.ox; r.y = p.oy;
+    }
+    reindex();
+    if (snapshot() !== p.before){ record(p.before); touch(); }
+    render();
+    select(p.id);
+  }
+  if (doc && doc._pending && !editing && !iedit) applyPending();
+}
+
+stage.addEventListener('dblclick', e => {
+  if (!doc) return;
+  const hit = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+  if (hit.closest('.ui') || hit.closest('.tog,.badge,.plus,.sib')) return;
+  const nodeEl = hit.closest('.node');
+  if (nodeEl){ if (editing !== nodeEl.dataset.id) startEdit(nodeEl.dataset.id); return; }
+  const itemEl = hit.closest('.item');
+  if (itemEl){
+    const id = itemEl.dataset.id, td = hit.closest('td');
+    if (iedit && iedit.id === id && (!td || iedit.el === td)) return;
+    if (td) startItemEdit(id, { r: +td.dataset.r, c: +td.dataset.c });
+    else startItemEdit(id);
+    return;
+  }
+  if (tool !== 'select') return;
+  const w = toWorld(e.clientX, e.clientY);
+  addRoot(w.x, w.y);
+});
+nodesLayer.addEventListener('click', e => {
+  const b = e.target.closest('.tog,.badge,.plus,.sib'); if (!b) return;
+  e.stopPropagation();
+  const id = b.closest('.node').dataset.id;
+  if (b.classList.contains('plus')) addChild(id);
+  else if (b.classList.contains('sib')) addSibling(id, false);
+  else if (e.altKey) foldAll(id);
+  else toggleCollapse(id);
+});
+stage.addEventListener('wheel', e => {
+  if (e.target.closest('#help') || e.target.closest('#dialog') || e.target.closest('#sidebar')) return;
+  e.preventDefault();
+  cancelAnimationFrame(anim);
+  const r = stageRect();
+  if (e.ctrlKey || e.metaKey){
+    const f = Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0025) * (e.ctrlKey && !e.metaKey ? 2.2 : 1));
+    Object.assign(view, zoomTarget(view.z * f, e.clientX - r.left, e.clientY - r.top));
+  } else {
+    const m = e.deltaMode === 1 ? 16 : 1;
+    let dx = e.deltaX * m, dy = e.deltaY * m;
+    if (e.shiftKey && !dx){ dx = dy; dy = 0; }
+    view.x -= dx; view.y -= dy;
+  }
+  applyView();
+}, { passive: false });
+window.addEventListener('resize', () => positionToolbar());
+
+/* =========================================================================
+   Selection toolbars
+   ========================================================================= */
+const swWrap = toolbar.querySelector('.swatches');
+swWrap.innerHTML = '<button class="sw auto" data-color="" title="Automatic colour"></button>' +
+  PALETTE.map(c => `<button class="sw" data-color="${c}" style="--sw:${c}" title="${c}"></button>`).join('');
+toolbar.addEventListener('click', e => {
+  const sw = e.target.closest('.sw');
+  if (sw){ setColor(sw.dataset.color); return; }
+  const b = e.target.closest('[data-act]'); if (!b || !isNode(primary)) return;
+  const act = b.dataset.act;
+  if (act === 'child') addChild(primary);
+  else if (act === 'collapse') toggleCollapse(primary);
+  else if (act === 'fold') foldAll(primary);
+  else if (act === 'layout') setLayout(b.dataset.v);
+  else if (act === 'delete') deleteSelection();
+});
+const TRASH = '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
+function buildItemToolbar(it){
+  let h = '';
+  if (it.type === 'note') h += '<div class="swatches">' + NOTE_COLORS.map(c => `<button class="sw${(it.color || NOTE_COLORS[0]) === c ? ' on' : ''}" data-note="${c}" style="--sw:${c}" title="Note colour"></button>`).join('') + '</div><span class="sep"></span>';
+  if (it.type === 'table'){
+    h += `<button class="tl" data-iact="row+" title="Insert a row below the selected cell">+ Row</button><button class="tl" data-iact="col+" title="Insert a column right of the selected cell">+ Column</button>`;
+    h += `<button class="tl" data-iact="row-" title="Delete the selected cell's row">− Row</button><button class="tl" data-iact="col-" title="Delete the selected cell's column">− Column</button>`;
+    h += `<button class="tl${it.header ? ' on' : ''}" data-iact="head" title="Style the first row as a header">Header</button><span class="sep"></span>`;
+  }
+  h += `<button class="tl" data-iact="front" title="Bring to front">Front</button><button class="tl" data-iact="back" title="Send to back">Back</button><span class="sep"></span>`;
+  h += `<button class="ib" data-iact="delete" title="Delete (Delete)" aria-label="Delete">${TRASH}</button>`;
+  if (itoolbar._h !== h){ itoolbar.innerHTML = h; itoolbar._h = h; }
+}
+itoolbar.addEventListener('click', e => {
+  const it = doc && doc.items[primary]; if (!it) return;
+  const sw = e.target.closest('[data-note]');
+  if (sw){ change(() => { for (const id of sel) if (isItem(id) && doc.items[id].type === 'note') doc.items[id].color = sw.dataset.note; }); return; }
+  const b = e.target.closest('[data-iact]'); if (!b) return;
+  const a = b.dataset.iact;
+  if (a === 'delete') deleteSelection();
+  else if (a === 'front' || a === 'back') layer(a === 'front');
+  else tableOp(a);
+});
+function updateToolbar(){
+  const id = primary;
+  const busy = editing || iedit || (ptr && ['drag', 'imove', 'marquee', 'resize'].includes(ptr.mode));
+  if (!doc || !id || busy || !boxOf(id)){ toolbar.hidden = true; itoolbar.hidden = true; return; }
+  if (isNode(id)){
+    itoolbar.hidden = true;
+    const n = doc.nodes[id], root = isRoot(id);
+    toolbar.hidden = false;
+    const colorable = [...sel].some(x => isNode(x) && !isRoot(x));
+    swWrap.hidden = !colorable;
+    toolbar.querySelector('[data-g="color"]').hidden = !colorable;
+    for (const b of swWrap.children) b.classList.toggle('on', colorable && (b.dataset.color || null) === (n.color || null));
+    const cb = toolbar.querySelector('[data-act="collapse"]');
+    cb.hidden = !n.children.length;
+    cb.innerHTML = n.collapsed ? '<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg>' : '<svg viewBox="0 0 24 24"><path d="m7 15 5-5 5 5"/></svg>';
+    cb.title = (n.collapsed ? 'Expand' : 'Collapse') + ` (${MOD}/)`;
+    toolbar.querySelector('[data-act="fold"]').hidden = !n.children.some(c => doc.nodes[c].children.length);
+    const lg = toolbar.querySelector('.layout-group');
+    lg.hidden = !root;
+    if (root){ const r = rootEntry(id); for (const b of lg.querySelectorAll('[data-v]')) b.classList.toggle('on', (r.layout || 'right') === b.dataset.v); }
+  } else {
+    toolbar.hidden = true;
+    buildItemToolbar(doc.items[id]);
+    itoolbar.hidden = false;
+  }
+  positionToolbar();
+}
+function positionToolbar(){
+  const bar = !toolbar.hidden ? toolbar : !itoolbar.hidden ? itoolbar : null;
+  if (!bar || !primary) return;
+  const p = boxOf(primary); if (!p) return;
+  const r = stageRect();
+  const w = bar.offsetWidth, h = bar.offsetHeight;
+  let x = view.x + (p.x + p.w / 2) * view.z, y = view.y + p.y * view.z - 12, below = false;
+  if (y - h < 62){ y = view.y + (p.y + p.h) * view.z + 12; below = true; }
+  x = clamp(x, w / 2 + 8, r.width - w / 2 - 8);
+  bar.style.left = x + 'px';
+  bar.style.top = y + 'px';
+  bar.style.transform = below ? 'translate(-50%,0)' : 'translate(-50%,-100%)';
+}
+
+/* =========================================================================
+   Boards, sidebar, profile, sharing
+   ========================================================================= */
+const docTitle = d => (d.title && d.title.trim()) || (d.roots && d.roots[0] && d.nodes[d.roots[0].id] && d.nodes[d.roots[0].id].text.split('\n')[0]) || 'Untitled';
+function relTime(t){
+  if (!t) return '';
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return 'Just now';
+  if (s < 3600) return Math.floor(s / 60) + ' min ago';
+  if (s < 86400) return Math.floor(s / 3600) + ' h ago';
+  return new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+const isOwnerOf = d => d.space === 'local' || d.ownedByMe !== false;
+function renderSidebar(){
+  const list = $('#doclist');
+  const byTime = (a, b) => (b.updated || 0) - (a.updated || 0);
+  const all = Object.values(docs);
+  const sections = [
+    { key: 'private', label: MODE === 'drive' ? 'Private' : 'This browser', items: all.filter(d => d.space !== 'shared').sort(byTime),
+      empty: MODE === 'drive' ? 'Only you can see these boards. They are saved in your Google Drive.' : 'Boards here stay in this browser.' },
+  ];
+  if (MODE === 'drive') sections.push({ key: 'shared', label: 'Shared', items: all.filter(d => d.space === 'shared').sort(byTime), empty: 'Boards you share, and boards people share with you, show up here.' });
+  list.innerHTML = '';
+  for (const s of sections){
+    const closed = !!store.closed[s.key];
+    const head = document.createElement('button');
+    head.className = 'sec' + (closed ? ' closed' : '');
+    head.innerHTML = `<svg viewBox="0 0 10 10"><path d="M1 3h8L5 8z"/></svg>${esc(s.label)}`;
+    head.addEventListener('click', () => { store.closed[s.key] = !closed; Local.saveStore(); renderSidebar(); });
+    list.appendChild(head);
+    if (closed) continue;
+    if (!s.items.length){ const p = document.createElement('div'); p.className = 'sec-empty'; p.textContent = s.empty; list.appendChild(p); continue; }
+    for (const d of s.items){
+      const row = document.createElement('div');
+      row.className = 'doc' + (doc && d.id === doc.id ? ' on' : '');
+      row.setAttribute('role', 'listitem');
+      const theirs = d.space === 'shared' && d.ownedByMe === false;
+      const count = Object.keys(d.nodes).length + Object.keys(d.items || {}).length;
+      const others = Math.max(0, (d.members || []).length - 1);
+      const meta = d.space === 'shared'
+        ? (theirs ? 'Shared by ' + (d.ownerName || 'someone') : (d.linkAccess === 'edit' && !others ? 'Shared by link' : `You shared with ${others} ${others === 1 ? 'person' : 'people'}${d.linkAccess === 'edit' ? ' · link on' : ''}`))
+        : relTime(d.updated) + (d._loaded === false ? '' : ` · ${count} objects`);
+      const delLabel = isOwnerOf(d) ? 'Delete board' : 'Leave board';
+      row.innerHTML = `<span class="di">${d.space === 'shared' ? ICON_PEOPLE : ICON_MAP}</span><span class="dt"></span><span class="dm"></span><button class="del" title="${delLabel}" aria-label="${delLabel}">✕</button>`;
+      if (theirs && d.ownerPhoto){ const img = document.createElement('img'); img.alt = ''; img.referrerPolicy = 'no-referrer'; img.src = d.ownerPhoto; row.querySelector('.di').replaceChildren(img); }
+      row.querySelector('.dt').textContent = docTitle(d);
+      row.querySelector('.dm').textContent = meta;
+      row.addEventListener('click', ev => { if (ev.target.closest('.del')) return; openDoc(d.id); if (isNarrow()) toggleSidebar(false); });
+      const del = row.querySelector('.del');
+      del.addEventListener('click', ev => {
+        ev.stopPropagation();
+        if (del.classList.contains('armed')) deleteDoc(d.id);
+        else { del.classList.add('armed'); del.textContent = isOwnerOf(d) ? 'Delete?' : 'Leave?'; setTimeout(() => { if (del.isConnected){ del.classList.remove('armed'); del.textContent = '✕'; } }, 2500); }
+      });
+      list.appendChild(row);
+    }
+  }
+  renderBanner();
+}
+function renderBanner(){
+  const b = $('#sbBanner');
+  if (MODE === 'drive' && localBoards.length){
+    b.hidden = false;
+    b.innerHTML = `${localBoards.length} board${localBoards.length === 1 ? ' is' : 's are'} saved only in this browser.<br><button class="btn primary" id="moveLocal">Move to Google Drive</button>`;
+    $('#moveLocal').onclick = moveLocalBoards;
+  } else b.hidden = true;
+}
+async function moveLocalBoards(){
+  const list = localBoards; localBoards = [];
+  renderBanner();
+  let moved = 0;
+  for (const d of list){
+    Object.assign(d, { space: 'private', ownedByMe: true, fileId: null, _loaded: true });
+    docs[d.id] = d;
+    await Drive.write(d);
+    if (d.fileId){ Local.remove(d.id); moved++; }
+    else { delete docs[d.id]; d.space = 'local'; localBoards.push(d); }
+  }
+  renderSidebar();
+  if (!doc && moved) openFallback();
+  toast(moved ? `Moved ${moved} board${moved === 1 ? '' : 's'} to Google Drive` : 'Those boards could not be moved. Try again.');
+}
+function updateSpace(){
+  const s = $('#space');
+  if (!doc){ s.innerHTML = ''; return; }
+  const label = doc.space === 'shared' ? 'Shared' : doc.space === 'private' ? 'Private' : 'This browser';
+  s.innerHTML = (doc.space === 'shared' ? ICON_PEOPLE : doc.space === 'private' ? ICON_LOCK : ICON_DEVICE) + `<span class="sl">${label}</span>`;
+  s.title = doc.space === 'shared' ? 'Shared with the people you added. Click to manage.' : doc.space === 'private' ? 'Saved in your Google Drive. Only you can see it. Click to share.' : 'Saved in this browser only.';
+}
+function openDoc(id){
+  const target = docs[id];
+  if (target && target.space !== 'local' && target._loaded === false){ loadAndOpen(target); return; }
+  if (doc){ commitEdit(); commitItemEdit(); flushSaves(); }
+  doc = target;
+  if (!doc) return openFallback();
+  normalize(doc);
+  if (MODE === 'drive') store.driveCurrent = id; else store.current = id;
+  Local.saveStore();
+  undoStack = []; redoStack = []; updateUndoButtons();
+  sel.clear(); primary = null; editing = null; iedit = null; tableCursor = null;
+  clearCanvas();
+  $('#title').value = doc.title || '';
+  $('#title').placeholder = docTitle({ ...doc, title: '' });
+  updateSpace();
+  render();
+  let saved = null;
+  try { saved = JSON.parse(ls.get(LS_VIEW + id) || 'null') || doc.view; } catch(e){}
+  let restored = false;
+  if (saved && isFinite(saved.z)){
+    Object.assign(view, { x: saved.x, y: saved.y, z: saved.z }); applyView();
+    const r = stageRect(), ids = allIds();
+    const onScreen = i => { const p = boxOf(i), x = view.x + p.x * view.z, y = view.y + p.y * view.z; return x < r.width && y < r.height && x + p.w * view.z > 0 && y + p.h * view.z > 0; };
+    const fully = i => { const p = boxOf(i), x = view.x + p.x * view.z; return x >= -4 && x + p.w * view.z <= r.width + 4; };
+    restored = ids.length > 0 && ids.some(onScreen) && (r.width > 720 || ids.every(fully));
+  }
+  if (!restored){ if (allIds().length) fit(null, 1, true); else { const r = stageRect(); Object.assign(view, { x: r.width / 2, y: r.height / 2, z: 1 }); applyView(); } }
+  renderSidebar();
+}
+/** Boards from Drive are downloaded the first time they are opened. */
+async function loadAndOpen(d){
+  if (d._loading) return;
+  d._loading = true;
+  const L = $('#loading');
+  L.textContent = 'Opening ' + docTitle(d) + '…'; L.hidden = false;
+  let ok = false;
+  try {
+    const r = await Drive.fetchBody(d.fileId);
+    applyMeta(d, r.meta);
+    if (!dirty.has(d.id)) Object.assign(d, r.body, { title: r.title, updated: r.updated || d.updated });
+    d._rev = d._remoteRev = revOf(r.meta); known(d, d._rev);
+    d._loaded = true; ok = true;
+  } catch(e){
+    if (e.status === 401) authLost();
+    else if (e.status === 404 || e.status === 403){ remoteRemoved(d); renderSidebar(); toast('That board was deleted or is no longer shared with you'); }
+    else if (e.reason === 'format') toast('That file in Google Drive is not a readable board.', 5000);
+    else toast('That board could not be opened from Google Drive. Try again.', 5000);
+  } finally {
+    d._loading = false; L.hidden = true; L.textContent = 'Loading your boards…';
+  }
+  if (ok) openDoc(d.id); else updateHint();
+}
+function openFallback(){
+  const list = Object.values(docs).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  if (list.length) return openDoc(list[0].id);
+  doc = null; clearCanvas(); updateSpace(); $('#title').value = ''; render(); renderSidebar();
+}
+function makeDoc(title, outline){
+  const d = normalize({ id: uid(), title: title || '', nodes: {}, roots: [], items: {}, updated: Date.now(), space: MODE === 'drive' ? 'private' : 'local', ownedByMe: true, _loaded: true });
+  const prev = doc; doc = d;
+  if (outline) parseOutline(outline).forEach((t, i) => { const id = importTree(t); d.roots.push({ id, x: 0, y: i * 400, layout: 'right' }); });
+  doc = prev;
+  docs[d.id] = d;
+  dirty.add(d.id);
+  return d;
+}
+function newDoc(){
+  const d = makeDoc('', null);
+  openDoc(d.id);
+  const rid0 = newNode();
+  doc.roots.push({ id: rid0, x: 0, y: 0, layout: 'right' });
+  const r = stageRect();
+  Object.assign(view, { x: r.width / 2 - 100, y: r.height / 2, z: 1 });
+  applyView();
+  undoStack = [];
+  render();
+  startEdit(rid0);
+  editBefore = snapshot();
+  dirty.add(d.id);
+  flushSaves();
+}
+function addExamples(){
+  const a = makeDoc('', SAMPLE_2); a.updated = Date.now();
+  const b = makeDoc('', SAMPLE_1); b.updated = Date.now() - 60000;
+  flushSaves();
+  openDoc(a.id);
+}
+async function deleteDoc(id){
+  const d = docs[id]; if (!d) return;
+  const wasCurrent = doc === d;
+  delete docs[id];
+  dirty.delete(id);
+  let msg = 'Board deleted';
+  try {
+    if (d.space === 'local') Local.remove(id);
+    else {
+      if (d._writing) await d._wp;
+      if (d.fileId && isOwnerOf(d)){ await Drive.trash(d); msg = 'Board moved to the Google Drive trash'; }
+      else if (d.fileId){
+        msg = 'You left the board';
+        // Remove your own access; if it came through a group or a link, just hide the board here.
+        try { await Drive.delPerm(d, me.permissionId); } catch(e){ store.hidden[d.fileId] = true; Local.saveStore(); }
+      }
+      clearPending(d);
+      if (d.fileId) delete byFile[d.fileId];
+    }
+    ls.del(LS_VIEW + id);
+  } catch(e){ docs[id] = d; toast('That board could not be removed. Try again.'); renderSidebar(); return; }
+  if (wasCurrent){ doc = null; openFallback(); }
+  renderSidebar();
+  toast(msg);
+}
+let sidebarOpen = true;
+const isNarrow = () => innerWidth <= 720;
+function toggleSidebar(force){
+  sidebarOpen = force != null ? force : !sidebarOpen;
+  app.classList.toggle('nosidebar', !sidebarOpen);
+  $('#toggleSidebar').classList.toggle('on', sidebarOpen);
+  if (!isNarrow()){ store.sidebar = sidebarOpen; Local.saveStore(); }
+  setTimeout(positionToolbar, 220);
+}
+
+/* ---------- account menu ---------- */
+function closeMenu(){ $('#menu').hidden = true; }
+function openMenu(){
+  const m = $('#menu');
+  const sub = MODE === 'drive' ? `Boards are saved in the “${CFG.folderName}” folder of this Google Drive.`
+    : DRIVE_READY ? 'Boards are saved in this browser only. Connect Google Drive to keep them in your Drive and share them.'
+    : 'Boards are saved in this browser only. To keep them in Google Drive, follow SETUP.md.';
+  const items = [];
+  if (MODE === 'drive'){
+    if (localBoards.length) items.push(['move', `Move ${localBoards.length} board${localBoards.length === 1 ? '' : 's'} from this browser to Google Drive`]);
+    items.push(['sync', 'Sync now']);
+    if (PICKER_READY) items.push(['pick', 'Open a board from Google Drive…']);
+    items.push(['folder', 'Show my boards folder in Google Drive']);
+  } else if (DRIVE_READY) items.push(['connect', 'Connect Google Drive']);
+  items.push(['examples', 'Add the example boards'], ['theme', 'Switch light / dark'], ['help', 'Keyboard shortcuts']);
+  if (MODE === 'drive') items.push(['signout', 'Sign out of Google']);
+  m.innerHTML = `<div class="who"><img alt="" referrerpolicy="no-referrer"><div><b></b><span></span></div></div>` + items.map(([k, t]) => `<button class="mi" data-m="${k}">${esc(t)}</button>`).join('');
+  const img = m.querySelector('.who img');
+  if (MODE === 'drive' && me && me.photoLink) img.src = me.photoLink; else img.hidden = true;
+  m.querySelector('.who b').textContent = MODE === 'drive' ? (me.displayName || me.emailAddress) : 'This browser';
+  m.querySelector('.who span').textContent = (MODE === 'drive' && me.displayName ? me.emailAddress + '. ' : '') + sub;
+  m.hidden = false;
+}
+$('#profileBtn').addEventListener('click', e => { e.stopPropagation(); $('#menu').hidden ? openMenu() : closeMenu(); });
+$('#menu').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if (!b) return;
+  closeMenu();
+  const k = b.dataset.m;
+  if (k === 'connect') connectDrive();
+  if (k === 'move') moveLocalBoards();
+  if (k === 'sync'){ flushSaves(); Sync.poll(true).then(() => toast('Up to date with Google Drive')); }
+  if (k === 'pick') pickFromDrive();
+  if (k === 'folder') Drive.ensureFolder().then(id => window.open('https://drive.google.com/drive/folders/' + id, '_blank', 'noopener'), () => toast('Could not find the boards folder'));
+  if (k === 'signout') signOut();
+  if (k === 'examples') addExamples();
+  if (k === 'theme') toggleTheme();
+  if (k === 'help') toggleHelp(true);
+});
+document.addEventListener('pointerdown', e => { if (!$('#menu').hidden && !e.target.closest('#menu') && !e.target.closest('#profileBtn')) closeMenu(); });
+/** Runs from a click, because Google's sign-in popup needs one. The page reloads into Drive mode. */
+function connectDrive(){
+  Auth.request().then(() => { store.mode = 'drive'; Local.saveStore(); location.reload(); }, e => toast(authErrorText(e), 6000));
+}
+async function signOut(){
+  if (editing) commitEdit(); if (iedit) commitItemEdit();
+  flushSaves();
+  toast('Signing out…', 5000);
+  await Promise.all(Object.values(docs).map(d => d._wp).filter(Boolean));
+  Sync.stop(); Auth.forget();
+  delete store.mode; delete store.email; Local.saveStore();
+  location.reload();
+}
+function pickFromDrive(){
+  Picker.pick({ title: 'Choose boards to open' }).then(ids => { if (ids.length) addFromDrive(ids); }, () => toast('Google Picker could not load. Check googleApiKey and googleAppId in config.js.', 6000));
+}
+
+/* ---------- dialogs ---------- */
+function openDialog(html){ const d = $('#dialog'); delete d.dataset.sticky; d.innerHTML = html; d.hidden = false; $('#scrim').hidden = false; }
+/** Sticky dialogs (signing in) only close when the app closes them. */
+function closeDialog(force){
+  const d = $('#dialog');
+  if (d.dataset.sticky && force !== true) return;
+  delete d.dataset.sticky; d.hidden = true; $('#scrim').hidden = $('#help').hidden;
+}
+// A press anywhere outside an open dialog (or the shortcuts panel) closes it. This runs in the capture
+// phase so the canvas never turns that press into a selection box, which would swallow the click.
+document.addEventListener('pointerdown', e => {
+  const dlgOpen = !$('#dialog').hidden, helpOpen = !$('#help').hidden;
+  if (!dlgOpen && !helpOpen) return;
+  if (e.target.closest('#dialog') || e.target.closest('#help')) return;
+  if (dlgOpen) closeDialog();
+  if (helpOpen) toggleHelp(false);
+  if (e.target.id === 'scrim' || e.target.closest('#stage')){ e.stopPropagation(); e.preventDefault(); }
+}, true);
+
+const G_LOGO = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+function showConnect(note){
+  openDialog(`<h2>Your boards live in Google Drive</h2>
+    <p>Sign in with Google to open your boards. They are saved as files in a “${esc(CFG.folderName)}” folder in your own Google Drive, so they are there on any computer. This app can only see the files it creates, or files you choose to open with it.</p>
+    ${note ? `<p style="color:var(--danger)">${esc(note)}</p>` : ''}
+    <button class="btn primary gbtn" id="gConnect" disabled>${G_LOGO}<span>Loading Google sign-in…</span></button>
+    <button class="linkish" id="gLocal">Use without Google (boards stay in this browser only)</button>`);
+  $('#dialog').dataset.sticky = '1';
+  const btn = $('#gConnect'), label = btn.querySelector('span');
+  Auth.load().then(() => { btn.disabled = false; label.textContent = 'Continue with Google'; },
+    () => { label.textContent = 'Google sign-in could not load. Check your connection and reload.'; });
+  btn.onclick = () => { btn.disabled = true; Auth.request().then(startDrive, e => { btn.disabled = false; toast(authErrorText(e), 6000); }); };
+  $('#gLocal').onclick = () => { store.mode = 'local'; Local.saveStore(); closeDialog(true); startLocal(); };
+}
+
+/* ---------- sharing (Google Drive permissions) ---------- */
+const APP_URL = location.href.split('#')[0];
+const boardLink = d => APP_URL + '#b-' + (d.fileId || d.id);
+const ICON_LINK = '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+async function openShare(){
+  if (!doc) return;
+  if (MODE !== 'drive'){
+    openDialog(`<h2>Sharing needs Google Drive</h2><p>${DRIVE_READY ? 'This board is saved in this browser only. Connect Google Drive to keep your boards in your Drive and share them with colleagues.' : 'This copy of the app is not connected to Google Drive, so boards are kept in this browser. Follow SETUP.md to connect it.'}</p><div class="dlg-foot"><button class="btn" data-x="close">Close</button>${DRIVE_READY ? '<button class="btn primary" data-x="connect">Connect Google Drive</button>' : ''}</div>`);
+    const dlg = $('#dialog');
+    dlg.querySelector('[data-x="close"]').onclick = closeDialog;
+    const c = dlg.querySelector('[data-x="connect"]'); if (c) c.onclick = connectDrive;
+    return;
+  }
+  const d = doc;
+  if (!d.fileId){
+    toast('Saving to Google Drive…');
+    dirty.delete(d.id); await Drive.write(d);
+    if (!d.fileId || doc !== d) return;
+  }
+  const canShare = d.canShare !== false, owner = isOwnerOf(d);
+  openDialog(`<h2></h2><p>${canShare ? 'Invite people by their Google email address. They get an email with a link that opens this board.' : 'You can edit this board. Only its owner can change who has access.'}</p>
+    ${canShare ? '<form class="lcopy" id="shareForm"><input type="email" id="shareEmail" placeholder="name@company.com" autocomplete="email" aria-label="Email address" required><button class="btn primary" type="submit">Invite</button></form>' : ''}
+    <div class="plist" id="shareMembers"><div class="sec-empty" style="padding-left:6px">Loading…</div></div>
+    <div class="linkbox">
+      <div class="lrow"><span class="licon">${ICON_LINK}</span><div class="ltext"><b id="linkTitle"></b><span id="linkDesc"></span></div>${canShare ? '<label class="switch" title="Let anyone with the link open and edit this board"><input type="checkbox" id="linkToggle" aria-label="Anyone with the link can edit"><span></span></label>' : ''}</div>
+      <div class="lcopy"><input type="text" id="linkField" readonly aria-label="Board link"><button class="btn primary" id="copyLink">Copy link</button></div>
+    </div>
+    <div class="dlg-foot">${owner ? '<button class="btn danger" data-x="private">Stop sharing</button>' : '<button class="btn danger" data-x="leave">Leave board</button>'}<span style="display:flex;gap:8px"><a class="btn" id="openDrive" target="_blank" rel="noopener">Open in Drive</a><button class="btn" data-x="close">Done</button></span></div>
+    <div class="note">Boards are files in Google Drive, so Drive’s sharing rules apply: people you invite also see the file in their Drive under “Shared with me”, and your organisation’s Drive policies (such as blocking sharing outside the company) still hold. The first time someone opens a shared board here, Google asks them to confirm that this app may open it.</div>`);
+  const dlg = $('#dialog');
+  dlg.querySelector('h2').textContent = `Share “${docTitle(d)}”`;
+  dlg.querySelector('[data-x="close"]').onclick = closeDialog;
+  $('#openDrive').href = d.webViewLink || `https://drive.google.com/file/d/${d.fileId}/view`;
+  const stop = dlg.querySelector('[data-x="private"]');
+  const drawLink = () => {
+    const on = d.linkAccess === 'edit';
+    $('#linkTitle').textContent = on ? 'Anyone with the link can edit' : 'Only people invited can open';
+    $('#linkDesc').textContent = on
+      ? 'Anyone who opens this link with a Google account can open and edit the board.'
+      : (canShare ? 'Turn this on to let anyone with the link open and edit the board.' : 'People who open the link need to be invited first.');
+    const t = $('#linkToggle'); if (t) t.checked = on;
+    $('#linkField').value = boardLink(d);
+    if (stop) stop.hidden = d.space !== 'shared';
+  };
+  const afterChange = () => { updateSpace(); renderSidebar(); drawLink(); drawMembers(); };
+  const drawMembers = async () => {
+    let ps;
+    try { ps = await Drive.perms(d); }
+    catch(e){ const box = $('#shareMembers'); if (box) box.innerHTML = '<div class="sec-empty" style="padding-left:6px">Only people who can share this board can see who has access.</div>'; return; }
+    const box = $('#shareMembers'); if (!box || doc !== d) return;
+    box.innerHTML = '';
+    for (const p of ps){
+      if (p.type === 'anyone') continue;
+      const row = document.createElement('div'); row.className = 'prow';
+      row.innerHTML = `<img alt="" referrerpolicy="no-referrer"><span class="pn"></span><span class="pr"></span>`;
+      if (p.photoLink) row.querySelector('img').src = p.photoLink;
+      const pn = row.querySelector('.pn');
+      pn.textContent = (p.type === 'domain' ? 'Everyone at ' + p.domain : (p.displayName || p.emailAddress || 'Someone')) + (me && p.id === me.permissionId ? ' (you)' : '');
+      pn.title = p.emailAddress || '';
+      const role = row.querySelector('.pr');
+      if (p.role === 'owner') role.textContent = 'Owner';
+      else if (canShare){
+        const b = document.createElement('button'); b.className = 'btn'; b.textContent = 'Remove';
+        b.onclick = async () => { b.disabled = true; try { await Drive.delPerm(d, p.id); await Drive.refresh(d); } catch(e){ toast('Could not remove their access. Try again.'); } afterChange(); };
+        role.replaceWith(b);
+      } else role.textContent = p.role === 'reader' ? 'Can view' : p.role === 'commenter' ? 'Can comment' : 'Can edit';
+      box.appendChild(row);
+    }
+  };
+  drawLink(); drawMembers();
+  const form = $('#shareForm');
+  if (form){
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const input = $('#shareEmail'), email = input.value.trim(), btn = form.querySelector('button');
+      if (!email) return;
+      btn.disabled = true;
+      try { await Drive.addPerm(d, { type: 'user', role: 'writer', emailAddress: email }, true); await Drive.refresh(d); input.value = ''; toast('Shared with ' + email); }
+      catch(err){ toast(err.status === 400 || err.status === 403 ? 'Google could not share with that address. Check it, and that your organisation allows sharing with it.' : 'Could not share the board. Try again.', 6000); }
+      btn.disabled = false; afterChange();
+    });
+    setTimeout(() => $('#shareEmail') && $('#shareEmail').focus(), 30);
+  }
+  const toggle = $('#linkToggle');
+  if (toggle) toggle.addEventListener('change', async () => {
+    toggle.disabled = true;
+    try {
+      if (toggle.checked) await Drive.addPerm(d, { type: 'anyone', role: 'writer', allowFileDiscovery: false }, false);
+      else await Drive.delPerm(d, 'anyoneWithLink');
+      await Drive.refresh(d);
+      toast(d.linkAccess === 'edit' ? 'Anyone with the link can now open and edit this board' : 'Link sharing is off. Only people you invited can open it.');
+    } catch(e){ toast('Could not change link sharing. Your organisation may not allow sharing by link.', 6000); }
+    toggle.disabled = false; afterChange();
+  });
+  $('#copyLink').onclick = () => { $('#linkField').select(); copyText(boardLink(d), d.linkAccess === 'edit' ? 'Link copied. Anyone with it can open and edit this board.' : 'Link copied. Only people you invited can open it.'); };
+  $('#linkField').addEventListener('focus', e => e.target.select());
+  if (stop) stop.onclick = async () => {
+    stop.disabled = true;
+    try {
+      for (const p of await Drive.perms(d)) if (p.role !== 'owner') await Drive.delPerm(d, p.id);
+      await Drive.refresh(d);
+      toast('The board is private again. Its link no longer works for others.');
+    } catch(e){ toast('Could not stop sharing. Try again, or use Open in Drive.'); }
+    stop.disabled = false; afterChange();
+  };
+  const leave = dlg.querySelector('[data-x="leave"]');
+  if (leave) leave.onclick = () => { closeDialog(); deleteDoc(d.id); };
+}
+/** Open the board named in the page link (#b-<Drive file id>). */
+async function openFromHash(){
+  const m = (location.hash || '').match(/^#b-([\w-]+)$/);
+  if (!m) return false;
+  const id = m[1];
+  const have = docs[id] || docs[byFile[id]];
+  if (have){ if (!doc || doc.id !== have.id) openDoc(have.id); return true; }
+  if (MODE !== 'drive'){ toast(DRIVE_READY ? 'Sign in with Google to open shared boards' : 'This copy of the app is not connected to Google Drive', 5000); return false; }
+  try {
+    const f = await Drive.get(id);
+    if (f.properties && f.properties.mmKind === 'board' && !f.trashed){
+      delete store.hidden[f.id]; Local.saveStore();
+      const d = ingestMeta(f); renderSidebar(); openDoc(d.id);
+      return true;
+    }
+  } catch(e){ if (e.status === 401){ authLost(); return false; } }
+  askForAccess(id);
+  return false;
+}
+/** With the drive.file permission, Google only lets the app open a shared file after the person picks it once. */
+function askForAccess(fileId){
+  const who = esc(me ? me.emailAddress : 'your account');
+  if (!PICKER_READY){
+    openDialog(`<h2>You can’t open this board yet</h2><p>Ask the person who shared it to invite ${who}. If they already did, ask whoever set up this app to add the Google Picker key to config.js (see SETUP.md), so shared boards can be opened here.</p><div class="dlg-foot"><span></span><button class="btn primary" data-x="close">OK</button></div>`);
+    $('#dialog').querySelector('[data-x="close"]').onclick = closeDialog;
+    return;
+  }
+  openDialog(`<h2>Open a shared board</h2><p>Google asks you to confirm which files this app may open. Click below and select the board. If it is not listed, it has not been shared with ${who} yet.</p><div class="dlg-foot"><button class="btn" data-x="close">Cancel</button><button class="btn primary" data-x="pick">Choose the board in Google Drive</button></div>`);
+  const dlg = $('#dialog');
+  dlg.querySelector('[data-x="close"]').onclick = closeDialog;
+  dlg.querySelector('[data-x="pick"]').onclick = () => {
+    closeDialog();
+    Picker.pick({ fileIds: [fileId], title: 'Select the shared board to open it' })
+      .then(ids => { if (ids.length) addFromDrive(ids); }, () => toast('Google Picker could not load. Check googleApiKey and googleAppId in config.js.', 6000));
+  };
+}
+window.addEventListener('hashchange', () => { if (!$('#loading').hidden) return; openFromHash(); });
+$('#shareBtn').addEventListener('click', openShare);
+$('#space').addEventListener('click', openShare);
+
+/* ---------- top-bar buttons ---------- */
+$('#newDoc').addEventListener('click', newDoc);
+$('#toggleSidebar').addEventListener('click', () => toggleSidebar());
+$('#title').addEventListener('input', e => { if (!doc) return; doc.title = e.target.value; touch(); });
+$('#undoBtn').addEventListener('click', undo);
+$('#redoBtn').addEventListener('click', redo);
+$('#zoomIn').addEventListener('click', () => zoomBy(1.25));
+$('#zoomOut').addEventListener('click', () => zoomBy(1 / 1.25));
+$('#zoomPct').addEventListener('click', () => zoomTo(1));
+$('#zoomFit').addEventListener('click', () => fit());
+$('#helpBtn').addEventListener('click', () => toggleHelp());
+$('#hint').addEventListener('click', e => { const b = e.target.closest('[data-h]'); if (!b) return; if (b.dataset.h === 'new') newDoc(); else addExamples(); });
+function toggleTheme(){
+  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  store.theme = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = store.theme;
+  Local.saveStore();
+}
+$('#themeBtn').addEventListener('click', toggleTheme);
+async function copyText(text, okMsg){
+  try { await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch(err){
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch(e2){}
+    ta.remove(); toast(ok ? okMsg : 'Copy was blocked by the browser');
+  }
+}
+$('#copyText').addEventListener('click', () => { if (doc) copyText(outlineOf(doc.roots.map(r => r.id)), 'Whole map copied as an indented list'); });
+$('#exportJson').addEventListener('click', async () => {
+  if (!doc) return;
+  const json = JSON.stringify({ format: 'mindmap', version: 2, ...strip(doc) }, null, 2);
+  const name = docTitle(doc).replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').toLowerCase() || 'board';
+  let framed = false; try { framed = window.top !== window.self; } catch(e){ framed = true; }
+  if (framed){   // embedded pages often may not download files: copy instead
+    copyText(json, 'Board data copied. Paste it into a .json file to keep a backup.');
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a.download = name + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) importFile(f); });
+async function importFile(f){
+  const text = await f.text();
+  let d = null;
+  try {
+    const j = JSON.parse(text);
+    if (j && j.nodes && Array.isArray(j.roots)){
+      d = makeDoc(j.title || '', null);
+      Object.assign(d, normalize({ nodes: j.nodes, roots: j.roots, items: j.items }));
+    }
+  } catch(err){}
+  if (!d){
+    const name = f.name.replace(/\.[^.]+$/, '');
+    const trees = parseOutline(text);
+    if (!trees.length){ toast('That file has no list or board in it'); return; }
+    d = makeDoc(trees.length === 1 ? '' : name, text);
+  }
+  flushSaves(); openDoc(d.id);
+  toast('Imported ' + docTitle(d));
+}
+
+/* ---------- help ---------- */
+function buildHelp(){
+  const K = s => s.split(' ').map(x => `<kbd>${x}</kbd>`).join('');
+  const rows = [
+    ['Mind maps', null],
+    [K('Tab'), 'Add child'],
+    [K('Enter'), 'Add sibling (works while typing). Enter on an empty node finishes.'],
+    [K(MOD + ' Enter'), 'Add sibling above'],
+    [K(ALT + ' Enter'), 'Add parent'],
+    [K('⇧ Enter'), 'Line break while typing'],
+    [K('Tab') + ' / ' + K('⇧ Tab'), 'On an empty node: indent / outdent it'],
+    [K('M') + ' or double-click canvas', 'New mind map'],
+    [K('←') + K('→') + K('↑') + K('↓'), 'Move selection'],
+    [K(ALT + ' ↑') + K(ALT + ' ↓'), 'Reorder among siblings'],
+    [K(ALT + ' ←') + K(ALT + ' →'), 'Outdent / indent'],
+    [K(MOD + ' /'), 'Collapse / expand'],
+    [K('⇧ ' + MOD + ' /'), 'Fold / unfold all sub-branches'],
+    ['Drag a node', 'Drop on a node to make it a child, between nodes to reorder'],
+    ['Tools (with nothing selected)', null],
+    [K('V') + ' ' + K('H'), 'Select / hand'],
+    [K('N') + ' ' + K('T') + ' ' + K('E') + ' ' + K('I'), 'Sticky note / text / table / image'],
+    ['Paste from Sheets, Excel, Notion', 'Creates a table'],
+    ['Paste or drop an image', 'Adds it to the canvas'],
+    ['Editing', null],
+    ['Start typing, ' + K('F2') + ' or double-click', 'Edit the selected object'],
+    [K('Tab') + ' / ' + K('Enter') + ' in a table', 'Next cell / cell below'],
+    [K('Esc'), 'Stop editing, then deselect'],
+    [K('Delete'), 'Delete selection'],
+    [K(MOD + ' D'), 'Duplicate'],
+    [K(MOD + ' C') + K(MOD + ' X') + K(MOD + ' V'), 'Copy / cut / paste. Paste a bulleted list onto a node to import it.'],
+    [K(MOD + ' Z') + ' / ' + K('⇧ ' + MOD + ' Z'), 'Undo / redo'],
+    ['Selecting & view', null],
+    ['Drag on empty canvas', 'Select a group'],
+    [K('⇧') + ' + click', 'Add to or remove from the selection'],
+    ['Scroll, ' + K('Space') + ' + drag, or ' + K('H'), 'Pan'],
+    [K(MOD) + ' + scroll, pinch', 'Zoom'],
+    [K('⇧ 1') + K('⇧ 2') + K('⇧ 0'), 'Fit all / zoom to selection / 100%'],
+    [K(MOD + ' E'), 'Show / hide the list of boards'],
+  ];
+  $('#help').innerHTML = `<h2>Keyboard shortcuts</h2><p>Everything works from the keyboard. Boards save automatically.</p><table>${
+    rows.map(([a, b]) => b == null ? `<tr><td colspan="2" style="padding-top:14px;font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em">${a}</td></tr>` : `<tr><td>${a}</td><td>${b}</td></tr>`).join('')
+  }</table>`;
+}
+function toggleHelp(force){
+  const h = $('#help'), show = force != null ? force : h.hidden;
+  h.hidden = !show; $('#scrim').hidden = !show && $('#dialog').hidden;
+}
+let toastTimer = 0;
+function toast(msg, ms = 1800){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+}
+/** A message pinned above the canvas, optionally with one action button. `kind` lets code tell banners apart. */
+function banner(msg, label, fn, kind){
+  const b = $('#banner');
+  b.replaceChildren();
+  b.dataset.kind = msg ? (kind || '') : '';
+  if (msg){
+    const t = document.createElement('span'); t.textContent = msg; b.appendChild(t);
+    if (label){ const btn = document.createElement('button'); btn.className = 'btn primary'; btn.textContent = label; btn.onclick = fn; b.appendChild(btn); }
+  }
+  b.hidden = !msg;
+}
+
+/* =========================================================================
+   Boot
+   ========================================================================= */
+const SAMPLE_1 = `Mind map
+\tV0
+\t\tEdge cases
+\t\t\taccount closure
+\t\t\tLogout/login
+\t\t\t\tsame device new device
+\t\tArchitecture
+\t\t\tLocal
+\t\t\t\tAndroid
+\t\t\t\t\tDCIM
+\t\t\t\t\tSize of app
+\t\t\tBackend
+\t\t\t\tBackup
+\tV1
+\t\tDM`;
+const SAMPLE_2 = `Mapper on PPI
+\tExisting users
+\t\tPPI only
+\t\t\tFrontend
+\t\t\t\tHC entry point
+\t\t\t\t\tTell the users what is this mapper stuff
+\t\t\t\t\tBenifits
+\t\t\t\tUPI number section
+\t\t\t\t\tsimilar to TPAP
+\t\t\tBackend
+\t\t\t\tdo in the background
+\t\t\t\tafter verifying phone number is not linked anywhere else
+\t\t\t\tdo it with rate limiting/throttling
+\t\t\t\tdo the linking with throttle and rate limiting mimicking actual user behaviour
+\t\t\t\tDefine logic on who to link first
+\t\t\t\tDon't send SMS
+\t\tPPI + TPAP
+\t\t\tNumber not linked anywhere
+\t\t\t\tSame as PPI only
+\t\t\tNumber linked with us
+\t\t\t\tNo change
+\t\t\tNumber linked with someone else
+\t\t\t\tNo change
+\t\tOnly TPAP
+\t\t\tNo change
+\tNew users
+\t\tNew to platform
+\t\t\tOnboarding on PPI
+\t\t\t\tNumber not linked anywhere
+\t\t\t\t\tLink on famapp ppi, Figure out the flow
+\t\t\t\tNumber linked somewhere
+\t\t\t\t\tNo nudge
+\t\tHas TPAP
+\t\t\tOnboarding on PPI
+\t\t\t\tNumber not linked anywhere
+\t\t\t\t\tLink on famapp ppi, Figure out the flow
+\t\t\t\tNumber linked somewhere, even on famapp
+\t\t\t\t\tNo nudge
+\tGTM
+\t\tSocial Media
+\t\tInapp
+\t\t\tPush notification
+\t\t\t\tOutbound asking to link
+\t\t\t\t\tDiscarded as we are anyways doing it in the background
+\t\t\t\tPost linking
+\t\t\t\t\tTelling that you can directly get money now by using number on famapp
+\t\t\t\t\t\tVideo to make it simpler
+\t\t\tHC
+\tMonitoring
+\t\tWhich apps are our users moving out to
+\t\tFailures
+\t\tLatency
+\t\tOthers
+\tEdge cases
+\t\tPhone number change
+\t\tKYC limits hit`;
+
+function startLocal(){
+  MODE = 'local';
+  for (const d of Local.loadAll()) docs[d.id] = d;
+  store.order = store.order.filter(id => docs[id]);
+  if (!store.order.length && !store.seeded){
+    store.seeded = true;
+    const a = makeDoc('', SAMPLE_2); a.updated = Date.now();
+    const b = makeDoc('', SAMPLE_1); b.updated = Date.now() - 60000;
+    flushSaves();
+    store.current = a.id;
+  }
+  Local.saveStore();
+  $('#profileName').textContent = 'This browser';
+  $('#avatar').hidden = true;
+  docs[store.current] ? openDoc(store.current) : openFallback();
+  openFromHash();
+}
+async function startDrive(){
+  closeDialog(true);
+  MODE = 'drive';
+  localBoards = Local.loadAll();
+  $('#loading').hidden = false;
+  try {
+    const a = await gfetch(`${API}/about?fields=${encodeURIComponent('user(displayName,emailAddress,photoLink,permissionId)')}`);
+    me = a.user;
+    store.email = me.emailAddress; store.mode = 'drive'; Local.saveStore();
+    for (const f of await Drive.list()) ingestMeta(f);   // the boards folder is created with the first new board
+    replayPending();
+  } catch(e){
+    $('#loading').hidden = true; MODE = 'local';
+    showConnect(e.status === 401 ? '' : 'Could not reach Google Drive: ' + (e.message || 'network error') + '. Check your connection, or the setup in SETUP.md, and try again.');
+    return;
+  }
+  $('#loading').hidden = true;
+  $('#profileName').textContent = me.displayName || me.emailAddress || 'My boards';
+  const av = $('#avatar'); av.referrerPolicy = 'no-referrer';
+  if (me.photoLink){ av.hidden = false; av.src = me.photoLink; } else av.hidden = true;
+  docs[store.driveCurrent] ? openDoc(store.driveCurrent) : openFallback();
+  renderSidebar();
+  openFromHash();
+  Sync.start();
+}
+function boot(){
+  try { const s = JSON.parse(ls.get(LS_KEY) || 'null'); if (s && Array.isArray(s.order)) Object.assign(store, s); } catch(e){}
+  store.closed = store.closed || {}; store.hidden = store.hidden || {};
+  document.documentElement.dataset.theme = store.theme || 'dark';
+  sidebarOpen = store.sidebar !== false && !isNarrow();
+  app.classList.toggle('nosidebar', !sidebarOpen);
+  $('#toggleSidebar').classList.toggle('on', sidebarOpen);
+  buildHelp();
+  updateUndoButtons();
+  if (DRIVE_READY){
+    Auth.load().catch(() => {});        // ready before any click, since the sign-in popup must open straight from one
+    if (store.mode !== 'local') return Auth.cached() ? startDrive() : showConnect();
+  }
+  startLocal();
+  if (CFG.googleClientId && !DRIVE_READY) banner('Google Drive only works when this app is opened from a web address, not a file. Run ./serve.sh and open http://localhost:8080. Until then, boards are kept in this browser.');
+}
+window.addEventListener('beforeunload', e => {
+  if (editing) commitEdit(); if (iedit) commitItemEdit();
+  flushSaves();
+  // Unsaved Drive edits are also kept in this browser, but warn while an upload is still running.
+  if (MODE === 'drive' && Object.values(docs).some(d => d._writing)){ e.preventDefault(); e.returnValue = ''; }
+});
+window.__mm = { get doc(){ return doc; }, get pos(){ return pos; }, get sel(){ return sel; }, get editing(){ return editing; }, get iedit(){ return iedit; }, get mode(){ return MODE; }, get docs(){ return docs; }, get tool(){ return tool; } };
+boot();
+})();
+</script>
+</body>
+</html>

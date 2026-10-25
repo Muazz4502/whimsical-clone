@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Branches Mind Mapper</title>
+<meta name="description" content="Open-source Whimsical-style mind mapper. Boards live in your Google Drive — no backend, no lock-in.">
+<meta name="theme-color" content="#11161f">
+<title>Whimsical Clone</title>
 <style>
 :root{
   --bg:#f6f7f9; --dot:#d5dae1; --panel:#ffffff; --panel2:#f0f2f5; --border:#e0e4ea; --text:#1c2330; --muted:#7a8494;
@@ -362,7 +364,7 @@ const LS_TOKEN = 'mindmaps.gtoken', LS_PEND = 'mindmaps.pending.';
 const CFG = Object.assign({
   googleClientId: '', googleApiKey: '', googleAppId: '',
   scope: 'https://www.googleapis.com/auth/drive.file',
-  folderName: 'Branches Mind Mapper', pollSeconds: 20
+  folderName: 'Whimsical Clone', pollSeconds: 20
 }, window.MINDMAP_CONFIG || {});
 /** Google sign-in only works from an http(s) origin that is registered on the OAuth client (not from file://). */
 const DRIVE_READY = !!CFG.googleClientId && /^https?:$/.test(location.protocol);

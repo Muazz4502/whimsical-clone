@@ -1,4 +1,4 @@
-# Agent brief: set up, verify and take Branches Mind Mapper live
+# Agent brief: set up, verify and take Whimsical Clone live
 
 You are taking a finished static web app to production. **The code is done and tested. Your job is configuration, verification and deployment, not a rewrite.** Read `README.md` (how it works) and `SETUP.md` (Google Cloud steps) before starting.
 
@@ -33,11 +33,11 @@ Collect: Client ID, API key, project number.
 
 You *can* script these parts if `gcloud` is installed and authenticated:
 ```sh
-gcloud projects create branches-mind-mapper-XXXX --name="Branches Mind Mapper"
-gcloud config set project branches-mind-mapper-XXXX
+gcloud projects create whimsical-clone-XXXX --name="Whimsical Clone"
+gcloud config set project whimsical-clone-XXXX
 gcloud services enable drive.googleapis.com picker.googleapis.com
-gcloud projects describe branches-mind-mapper-XXXX --format='value(projectNumber)'   # → googleAppId
-gcloud services api-keys create --display-name="Mind Mapper Picker" \
+gcloud projects describe whimsical-clone-XXXX --format='value(projectNumber)'   # → googleAppId
+gcloud services api-keys create --display-name="Whimsical Clone Picker" \
   --api-target=service=picker.googleapis.com \
   --allowed-referrers="http://localhost:8080/*"            # add the live origin later
 ```
@@ -46,7 +46,7 @@ gcloud services api-keys create --display-name="Mind Mapper Picker" \
 
 - [ ] Fill `config.js` with the three values.
 - [ ] `./serve.sh` → http://localhost:8080 → **Continue with Google** (the human signs in once).
-- [ ] Verify in the owner's Google Drive: a folder named **Branches Mind Mapper** appears after the first board is created, containing `*.mindmap.json` files.
+- [ ] Verify in the owner's Google Drive: a folder named **Whimsical Clone** appears after the first board is created, containing `*.mindmap.json` files.
 - [ ] Edit a board, wait 2 s, reload → the edit persists. Open the same URL in a second browser profile, signed into the same account → the same boards appear, and an edit in one shows in the other within about 20 s.
 - [ ] **Sharing test with a second real account:** Share → invite → the second account opens the emailed link → clicks *Choose the board in Google Drive* → the board opens and their edits reach the owner.
 - [ ] If the Workspace admin blocks the app ("This app is blocked"), have the admin mark the Client ID as **Trusted** (SETUP.md troubleshooting table).

@@ -11,7 +11,7 @@ Time needed: about 15 minutes. Everything is in the browser at <https://console.
 
 ## Part 1: Google Cloud project
 
-1. Open <https://console.cloud.google.com>, sign in with the account that should "own" the app, and click the project picker → **New project**. Name it `Branches Mind Mapper`. Choose your organisation if one is offered.
+1. Open <https://console.cloud.google.com>, sign in with the account that should "own" the app, and click the project picker → **New project**. Name it `Whimsical Clone`. Choose your organisation if one is offered.
 2. Write down the **Project number** (digits) from the project's **Dashboard / Welcome** page. That's `googleAppId`.
 3. **APIs & Services → Library.** Enable both of these:
    - **Google Drive API**
@@ -20,7 +20,7 @@ Time needed: about 15 minutes. Everything is in the browser at <https://console.
 ## Part 2: OAuth consent screen (shown as "Google Auth Platform" in newer consoles)
 
 4. **APIs & Services → OAuth consent screen** (or **Google Auth Platform → Branding**).
-   - App name: `Branches Mind Mapper`. Support email and developer contact: your email.
+   - App name: `Whimsical Clone`. Support email and developer contact: your email.
    - Leave the logo empty. A logo makes Google ask for brand verification.
 5. **Audience / User type:**
    - **Internal** if you're on Workspace and only colleagues will use it. Recommended: no review and no test-user list.
@@ -52,7 +52,7 @@ window.MINDMAP_CONFIG = {
   googleApiKey: 'AIza…',
   googleAppId: '1234567890',
   scope: 'https://www.googleapis.com/auth/drive.file',
-  folderName: 'Branches Mind Mapper',
+  folderName: 'Whimsical Clone',
   pollSeconds: 20
 };
 ```
@@ -65,7 +65,7 @@ These values are **not secrets.** Google expects them to sit in web pages, and t
 ./serve.sh                 # then open http://localhost:8080
 ```
 
-Click **Continue with Google**, allow access, and create a board. A folder called **Branches Mind Mapper** appears in your Google Drive containing `<board name>.mindmap.json`.
+Click **Continue with Google**, allow access, and create a board. A folder called **Whimsical Clone** appears in your Google Drive containing `<board name>.mindmap.json`.
 
 ---
 

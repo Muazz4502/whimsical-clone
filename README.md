@@ -1,104 +1,132 @@
-# Branches Mind Mapper: Google Drive edition
+# Whimsical Clone
 
-A Whimsical-style mind-mapping app (mind maps, sticky notes, text, tables, images) that stores every board in **your own Google Drive**. There's no server, no database, and no dependency on Claude. It's one HTML file plus a settings file. It runs from `http://localhost:8080` on any laptop, or from any static web host.
+An open-source **Whimsical-style** mind mapper: mind maps, sticky notes, text, tables, and images — with **your Google Drive as the database**.
+
+No backend. No SaaS lock-in. One HTML file + a small config. Boards are plain Drive files you own.
+
+> **Not affiliated with [Whimsical](https://whimsical.com).** This is an independent open-source project inspired by that kind of canvas.
+
+**Try it:** [branches-mind-mapper.vercel.app](https://branches-mind-mapper.vercel.app) · works in-browser immediately; connect Google Drive for sync & sharing.
+
+---
+
+## Features
+
+- Mind maps with keyboard-first editing
+- Sticky notes, text, tables, and images on the same canvas
+- **Google Drive storage** — each board is a `.mindmap.json` file
+- **Sharing** via Drive permissions (invite by email or link)
+- Live sync across devices (~20s poll)
+- Offline-safe: unsaved edits are kept in the browser until Drive confirms
+- **This browser** mode if you skip Google setup
+- Zero build step — deploy as a static site
+
+## Quick start
+
+```bash
+git clone https://github.com/Muazz4502/whimsical-clone.git
+cd whimsical-clone
+./serve.sh
+```
+
+Open [http://localhost:8080](http://localhost:8080). Boards save in the browser until you add Google credentials (see below).
+
+### Project layout
 
 ```
-Whimsical/
-├── index.html        ← the whole app (UI + Google Drive storage + sync)
-├── config.js         ← the 3 Google values (filled in once; see SETUP.md)
-├── serve.sh          ← starts the app at http://localhost:8080
-├── SETUP.md          ← one-time Google Cloud setup (15 min)
-├── AGENT_BRIEF.md    ← runbook for an AI agent / developer to set up, verify and go live
-├── tests/            ← automated end-to-end test (fake Google, no account needed)
-└── legacy/           ← the previous Claude-artifact version, kept for migrating old boards
+whimsical-clone/
+├── index.html      ← the whole app
+├── config.js       ← Google Client ID / API key / App ID
+├── serve.sh        ← local server on :8080
+├── SETUP.md        ← one-time Google Cloud setup (~15 min)
+├── AGENT_BRIEF.md  ← deploy / verify runbook
+├── tests/          ← e2e suite (fake Google, no account needed)
+└── legacy/         ← older Claude-artifact build (for migrating boards)
 ```
 
 ---
 
-## 1. How it works
-
-### Google Drive is the database
+## Google Drive as the database
 
 | Database idea | How Drive provides it |
 |---|---|
-| A table | A folder called **Branches Mind Mapper** in the owner's My Drive |
-| A row | One file per board: `<board title>.mindmap.json` |
-| Row ID | Drive file ID (this is what share links contain: `…/#b-<fileId>`) |
-| Index / `WHERE` clause | Each board file is tagged with Drive *properties* `mmKind=board`, `mmId=<board id>`. The app runs the query `properties has {key='mmKind' and value='board'}` to list boards |
-| Row contents | The board as JSON: `{format, version, id, title, nodes, roots, items, updated}`. Images are stored inside it as compressed data URLs |
-| Version column | Drive's `headRevisionId`, which changes on every content save |
-| Backups / undo history | Drive's built-in **version history** on each file (right-click → *Manage versions*) and Drive **trash** |
-| Permissions | Drive sharing. "Invite" in the app creates a normal Drive permission |
+| A table | Folder **Whimsical Clone** in My Drive |
+| A row | One file: `<board title>.mindmap.json` |
+| Row ID | Drive file ID (share links use `#b-<fileId>`) |
+| Index | File properties `mmKind=board`, `mmId=…` |
+| Contents | JSON board: nodes, roots, items, images |
+| Versions | Drive version history + trash |
+| Permissions | Normal Drive sharing |
 
-Because boards are plain Drive files, you can always find, back up, download or share them from drive.google.com, even if this app disappears.
+The app uses scope `drive.file` — it only sees files it created or that you pick. Nothing is stored on our servers.
 
-### Signing in
+### Connect Google (once per deployment)
 
-The browser signs in with **Google Identity Services** (a popup) and gets an access token. That token is used to call the Drive REST API directly from the page. Nothing passes through any server of ours.
+Follow **[SETUP.md](./SETUP.md)** to create an OAuth Web client + Picker API key, then fill `config.js`:
 
-- **Permission level `drive.file`:** the app can only see files **it created**, or files the user **explicitly picked** in Google's file picker. It can't read the rest of your Drive. This is also why Google needs no security review.
-- Tokens last **about one hour**. After that, a banner says *"Your Google session expired"* with a **Reconnect** button: one click, no password. Edits made meanwhile aren't lost (see below).
+```js
+window.MINDMAP_CONFIG = {
+  googleClientId: '….apps.googleusercontent.com',
+  googleApiKey: 'AIza…',
+  googleAppId: '1234567890',   // Cloud project number
+  // …
+};
+```
 
-### Saving and syncing
-
-1. You edit. About 1.2 s after you stop, the board is uploaded (one request; the whole board file is replaced).
-2. **Before** uploading, a copy of the unsaved board is kept in the browser (`localStorage`). It's deleted once Drive confirms the save. If the tab closes, the laptop dies, the network drops or the session expires, those edits are re-uploaded the next time you sign in on **that browser**.
-3. Every 20 s (and whenever you come back to the tab) the app asks Drive which boards changed. Changes made on another laptop or by a colleague appear automatically. Boards are only downloaded when you open them.
-4. **Two people editing the same board at the same moment:** the last save wins. The app warns you when that happens, and the other version is still in that file's Drive version history. Restored offline edits never overwrite newer work: if the board changed elsewhere, they're saved as a separate board named *"… (unsaved changes)"*.
+These values are meant to be public in the page; lock them with authorized origins / referrers in Google Cloud.
 
 ### Sharing
 
-- **Share → Invite by email** adds a Drive permission and Google emails them a link like `https://your-app/#b-<fileId>`.
-- **"Anyone with the link can edit"** adds Drive's *anyone with the link* permission.
-- **The first time** a colleague opens a shared board, the app shows **"Choose the board in Google Drive"**. Google requires them to pick the file once before an app with `drive.file` access may open it. After that it's in their *Shared* list for good. This step needs the API key and app ID in `config.js`.
-- **Delete** sends the file to the owner's Drive trash (recoverable for 30 days). **Leave** removes your own access.
-- Your company's Drive policies apply as usual, for example blocking sharing outside the domain.
+- **Invite by email** → Drive permission + email with a board link
+- **Anyone with the link can edit** → Drive link sharing
+- First open of a shared board may ask the recipient to **choose the file in Drive** once (`drive.file` requirement)
+- **Delete** → owner's Drive trash · **Leave** → removes your access
 
 ### Without Google
 
-If `config.js` has no Client ID, or someone clicks *"Use without Google"*, the app runs in **This browser** mode: boards live only in that browser's storage, as in the original version. Connecting Google Drive later offers a **Move to Google Drive** button.
+Empty `config.js` or **Use without Google** → boards stay in that browser’s storage. After you connect Drive, you can **Move … boards from this browser to Google Drive**.
 
 ---
 
-## 2. Using it on another laptop
+## Deploy
 
-Your boards are in Google Drive, so moving laptops means **moving the app folder, not the data**.
+Static hosting only (no build):
 
-1. **Get the folder onto the new laptop:** a git clone, a zip, AirDrop, or a copy from Google Drive. It must include the **same `config.js`**.
-   - ⚠️ Use the same Client ID everywhere. With `drive.file`, Drive gives each Client ID access only to the files that Client ID created. A new Client ID would start with an empty board list. Your files would still be in Drive, and you could re-open them via *Open a board from Google Drive…*.
-2. You need **Python 3**: run `python3 --version`. macOS asks to install the developer tools if it's missing. On Windows, install it from python.org, or run `npx serve -l 8080` instead.
-3. In the folder, run `./serve.sh` and open **http://localhost:8080**. Keep port **8080**: it's the address registered with Google. For another port, add that address in SETUP.md Part 3 first.
-4. Click **Continue with Google** and sign in. All your boards appear.
+```bash
+# example: Vercel
+npx vercel deploy --prod
+```
 
-Once the app is deployed to a public address (see AGENT_BRIEF.md), a new laptop just needs that link, with nothing to install.
-
-**Before leaving the old laptop:** if any boards sit under **This browser** in the sidebar, use the profile menu → **Move … boards from this browser to Google Drive**. Browser-only boards don't travel.
-
-### Migrating boards from the old Claude version
-
-Boards made in the old Claude-hosted version (`legacy/mindmap-claude-artifact.html`) live in Claude's storage. To bring them over:
-
-1. Open the old app at its claude.ai link, open a board, and click **Export** in the sidebar. Inside Claude it may copy the JSON instead of downloading it. If so, paste it into a text file saved as `name.json`.
-2. In the new app (signed in to Google), click **Import** and choose that file. It's saved to Drive immediately.
+Then add the live origin to your OAuth client and API key restrictions (`https://your-domain`, no trailing slash). Details in [AGENT_BRIEF.md](./AGENT_BRIEF.md).
 
 ---
 
-## 3. Everyday operations
+## Everyday ops
 
 | Task | How |
 |---|---|
-| Start the app | `./serve.sh` → http://localhost:8080 (or the live link) |
-| Force a sync | Profile menu → **Sync now** |
-| See the files | Profile menu → **Show my boards folder in Google Drive** |
-| Open a board file someone sent you / a hand-uploaded export | Profile menu → **Open a board from Google Drive…** |
-| Restore an older version of a board | Drive → right-click the `.mindmap.json` → **Manage versions** / **Version history**, then reload the app |
-| Back up | The Drive folder *is* the backup. Also **Export** (one board as JSON) or Google Takeout |
-| Switch Google account | Profile menu → **Sign out of Google** |
-| Run the tests | `cd tests && npm install && npm test` (no Google account needed) |
+| Start locally | `./serve.sh` → http://localhost:8080 |
+| Force sync | Profile → **Sync now** |
+| Open Drive folder | Profile → **Show my boards folder in Google Drive** |
+| Open a shared / uploaded file | Profile → **Open a board from Google Drive…** |
+| Restore an old version | Drive → file → **Manage versions** |
+| Run tests | `cd tests && npm install && npm test` |
 
-## 4. Limits worth knowing
+Tests use a fake Google stack in Chrome — no real account required. Expect `ALL PASSED`.
 
-- **Hourly reconnect click.** Browser-only Google sign-in can't refresh silently. Removing it requires a small backend that holds a refresh token (a possible future improvement; see AGENT_BRIEF.md).
-- **Not real-time co-editing.** Changes from others arrive within about 20 s, and simultaneous edits to one board are last-save-wins (the other version stays in Drive history).
-- **Images** are stored inside the board file (up to 1600 px, about 600 KB each). A board with dozens of large images gets slow to save. Prefer a few images per board.
-- **Colleagues need Google accounts.** People opening shared boards must be allowed by your OAuth setup: Internal = same Workspace, or listed test users / a published app.
+---
+
+## Limits
+
+- Access tokens last ~1 hour; use **Reconnect** (edits are kept)
+- Sync is near-real-time (poll), not CRDT co-editing — last save wins; other version stays in Drive history
+- Large image-heavy boards slow down saves
+- Shared users need Google accounts allowed by your OAuth audience (Internal Workspace or External + test users / published)
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
+
+Whimsical® is a trademark of its respective owners. This project is not endorsed by them.
